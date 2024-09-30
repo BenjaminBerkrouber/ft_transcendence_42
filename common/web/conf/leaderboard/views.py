@@ -2,7 +2,10 @@
 import time
 from django.shortcuts import render, redirect
 from django.conf import settings
-from api.models import Player, Game
+
+from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
+from users.models import Player
+from chat.models import Friends, Messages, GameInvitation, Notification
 
 # ======================== Decorateur Validator ============================
 

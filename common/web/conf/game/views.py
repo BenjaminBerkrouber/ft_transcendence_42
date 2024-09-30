@@ -1,5 +1,9 @@
 from django.shortcuts import render, redirect
-from api.models import Game, Lobby, Player, Game_Tournament, Tournament, GameInvitation
+
+from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
+from users.models import Player
+from chat.models import Friends, Messages, GameInvitation, Notification
+
 import logging
 
 logger = logging.getLogger('print')
@@ -20,7 +24,7 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 from django.conf import settings
-from api.login_required import login_required, not_login_required
+from users.login_required import login_required, not_login_required
 from django.core.exceptions import ObjectDoesNotExist
 
 

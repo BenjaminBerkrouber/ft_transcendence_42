@@ -1,7 +1,11 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from api.models import Game, Lobby, Player, Game_Tournament, Tournament, GameInvitation
+
+from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
+from users.models import Player
+from chat.models import Friends, Messages, GameInvitation, Notification
+
 from django.core.serializers import serialize
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q

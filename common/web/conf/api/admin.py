@@ -1,5 +1,8 @@
 from django.contrib import admin
-from .models import Player, Friends, Messages, Game, GameInvitation, Notification, AIPlayer,  Tournament, Game_Tournament
+
+from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
+from users.models import Player
+from chat.models import Friends, Messages, GameInvitation, Notification
 
 # Register your models here.
 admin.site.register(Player)

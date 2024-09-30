@@ -5,7 +5,11 @@ from . import views_users
 from . import views_chat
 from . import views_game
 from django.conf import settings
-from .models import Player, Friends, Messages
+
+from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
+from users.models import Player
+from chat.models import Friends, Messages, GameInvitation, Notification
+
 from django.contrib.auth import views as auth_views
 
 # Add URLS for API

@@ -4,12 +4,20 @@ import json
 import random
 from game.Class.engine import Engine
 from asgiref.sync import sync_to_async
-from api import models
-from api.serializer import PlayerSerializer
+
+from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
+from users.models import Player
+from chat.models import Friends, Messages, GameInvitation, Notification
+
+from users.serializer import PlayerSerializer
 import asyncio
 import logging
 import hashlib
 from django.utils import timezone
+
+from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
+from users.models import Player
+from chat.models import Friends, Messages, GameInvitation, Notification
 
 logger = logging.getLogger('print')
 class Connect4GameConsumer(AsyncWebsocketConsumer):

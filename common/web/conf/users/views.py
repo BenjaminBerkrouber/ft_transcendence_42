@@ -10,11 +10,14 @@ from django.shortcuts import render
 from rest_framework.response import Response
 import requests
 from django.contrib.auth.models import User
-from api.models import Player, Game
 from django.core import serializers
-from api.login_required import login_required, not_login_required
+from users.login_required import login_required, not_login_required
 from django.contrib.auth import logout
 import logging
+
+from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
+from users.models import Player
+from chat.models import Friends, Messages, GameInvitation, Notification
 
 logger = logging.getLogger('print')
 

@@ -1,25 +1,36 @@
-# api/views_game.py
-from django.shortcuts import render, redirect
+# ========================================================================================================
+# ============================================= Include  =================================================
+# ========================================================================================================
+
+
+# ______________________________ Include for [///] ___________________________________
+
+import requests
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from django.contrib.auth.models import User
-from .models import Player, Friends, Messages, User, Lobby, AIPlayer, Tournament, Game_Tournament, PongCustomGame
-from rest_framework.decorators import parser_classes
-from rest_framework.parsers import FormParser
-from .serializer import LoginEncoder, PlayerSerializer
-from django.urls import reverse
-from django.contrib.auth import authenticate, login, logout as auth_logout
-import requests
-from django.http import HttpResponse, JsonResponse
-from django.core import serializers
-from django.db.models import Case, IntegerField, Sum, When
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib import messages
-from django.core.exceptions import ValidationError
-from .models import Game
-import random
+from users.login_required import login_required
+
+# ______________________________ Include for models apps ____________________________
+
+from django.contrib.auth.models import User
+from users.models import Player
+from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
+from chat.models import Friends, Messages, GameInvitation, Notification
+
+# ______________________________ Include Utils _____________________________________
+
+from itertools import chain
+from django.db.models import Q
+from django.core import serializers
 from functools import reduce
-from api.login_required import login_required
+import random
+
+
+# ========================================================================================================
+# ============================================= Methode  =================================================
+# ========================================================================================================
 
 
 import logging
