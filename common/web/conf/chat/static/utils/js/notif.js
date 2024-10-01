@@ -110,6 +110,19 @@ async function hideNotifMenus() {
 }
 
 
+
+// async function hideNotifSubMenus() {
+//     try {
+//         let notifChatBox = document.getElementById('notif-chat');
+//         notifChatBox.classList.remove('active');
+//         let notifSocialBox = document.getElementById('notif-social');
+//         notifSocialBox.classList.remove('active');
+//     } catch (error) {
+//         console.error('Failed to hideNotifSubMenus', error);
+//     }
+// }
+
+
 // =========================== NOTIF get ===========================
 
 async function getSocialNotif() {
