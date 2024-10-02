@@ -2,6 +2,16 @@
 
 // ============================== REQUEST API PART ==============================
 
+
+
+
+// ==========================================================================
+// API FOR CHAT	
+// ==========================================================================
+
+
+
+
 async function APIgetCurrentUser() {
 	return new Promise(async (resolve, reject) => {
 		resolve(await getFetchAPI("/api/@me"));
@@ -19,13 +29,6 @@ async function APIgetSocialUsers() {
 		resolve(await getFetchAPI("/api/getSocialUser"));
 	});
 }
-
-async function APIgetUserAvailableToLobby(lobbyUUID) {
-	return new Promise(async (resolve, reject) => {
-		resolve(await getFetchAPI(`/api/getUserAvailableToLobby?lobbyUUID=${lobbyUUID}`));
-	});
-}
-
 
 async function APIgetMessages(contactId) {
 	return new Promise(async (resolve, reject) => {
@@ -52,30 +55,16 @@ async function APIremoveChatNotif(userId) {
 }
 
 async function APIgetNbrChatNotif(userId) {
-    return new Promise(async (resolve, reject) => {
+	return new Promise(async (resolve, reject) => {
 		let nbrChatNotif = await getFetchAPI(`/api/getNbrChatNotif?userId=${userId}`);
 		resolve(nbrChatNotif.nbrNotif);
 	});
 }
 
 async function APIgetNbrSocialNotif(userId) {
-    return new Promise(async (resolve, reject) => {
+	return new Promise(async (resolve, reject) => {
 		let nbrSocialNotif = await getFetchAPI(`/api/getNbrSocialNotif?userId=${userId}`);
 		resolve(nbrSocialNotif.nbrNotif);
-    });
-}
-
-async function APIcreateLobby(userId, lobbyName) {
-	return new Promise(async (resolve, reject) => {
-		let lobbyTournament = await getFetchAPI(`/api/createLobby?userId=${userId}&lobbyName=${lobbyName}`);
-		resolve(lobbyTournament);
-	});
-}
-
-async function APIgetAllLobby() {
-	return new Promise(async (resolve, reject) => {
-		let allLobby = await getFetchAPI(`/api/getAllLobby`);
-		resolve(allLobby);
 	});
 }
 
@@ -83,13 +72,6 @@ async function APIgetUserById(userId) {
 	return new Promise(async (resolve, reject) => {
 		let user = await getFetchAPI(`/api/getUserById?userId=${userId}`);
 		resolve(user);
-	});
-}
-
-async function APIgetTournamentInfo(tournamentUUID) {
-	return new Promise(async (resolve, reject) => {
-		let game = await getFetchAPI(`/api/getTournamentInfo?tournamentUUID=${tournamentUUID}`);
-		resolve(game);
 	});
 }
 
@@ -106,6 +88,136 @@ async function APIclearNotifChatFor(userId) {
 		resolve(game);
 	});
 }
+
+
+async function APIsendMessage(contactId, message) {
+    try {
+        const response = await fetch(`/api/sendMessage/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ contactId, message }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+
+        return response.json();
+    } catch (error) {
+        console.error('Failed to send message:', error);
+        throw error;
+    }
+}
+
+async function APIsendGameInvite(contactId) {
+    try {
+        const response = await fetch(`/api/sendInvite/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ contactId }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+
+        return response.json();
+    } catch (error) {
+        console.error('Failed to send game invite:', error);
+        throw error;
+    }
+}
+
+async function APIupdateInviteStatus(contactId, status) {
+    try {
+        const response = await fetch(`/api/updateInviteStatus/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contactId: contactId,
+                status: status,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+
+        return response.json();
+    } catch (error) {
+        console.error('Failed to update invite status:', error);
+        throw error;
+    }
+}
+
+function APIupdateSocialStatus(socialUserId, friendStatus) {
+    return fetch("/api/updateSocialStatus/", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ socialUserId, friendStatus }),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json();
+    })
+    .catch(error => {
+        console.error("Failed to update social status:", error);
+        throw error;
+    });
+}
+
+
+
+// ==========================================================================
+
+
+
+
+
+
+
+
+async function APIgetUserAvailableToLobby(lobbyUUID) {
+	return new Promise(async (resolve, reject) => {
+		resolve(await getFetchAPI(`/api/getUserAvailableToLobby?lobbyUUID=${lobbyUUID}`));
+	});
+}
+
+async function APIcreateLobby(userId, lobbyName) {
+	return new Promise(async (resolve, reject) => {
+		let lobbyTournament = await getFetchAPI(`/api/createLobby?userId=${userId}&lobbyName=${lobbyName}`);
+		resolve(lobbyTournament);
+	});
+}
+
+async function APIgetAllLobby() {
+	return new Promise(async (resolve, reject) => {
+		let allLobby = await getFetchAPI(`/api/getAllLobby`);
+		resolve(allLobby);
+	});
+}
+
+async function APIgetTournamentInfo(tournamentUUID) {
+	return new Promise(async (resolve, reject) => {
+		let game = await getFetchAPI(`/api/getTournamentInfo?tournamentUUID=${tournamentUUID}`);
+		resolve(game);
+	});
+}
+
 
 async function APIgetConnect4GameForUser(userId) {
 	return new Promise(async (resolve, reject) => {
@@ -182,28 +294,6 @@ function APIsaveCustomAtSession(pongCustom) {
 
 
 //  OTHER
-
-
-function APIupdateSocialStatus(socialUserId, friendStatus) {
-    return fetch("/api/updateSocialStatus/", {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": getCookie("csrftoken"),
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ socialUserId, friendStatus }),
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText);
-        }
-        return response.json();
-    })
-    .catch(error => {
-        console.error("Failed to update social status:", error);
-        throw error;
-    });
-}
 
 
 
@@ -350,4 +440,19 @@ async function getFetchAPI(url) {
 			reject(error);
 		}
 	});
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }

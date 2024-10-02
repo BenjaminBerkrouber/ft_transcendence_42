@@ -140,7 +140,7 @@ def sendMessage(request):
         player = Player.objects.get(username=user)
         friend = Player.objects.get(id=contactId)
         relationship = Friends.objects.filter(player_id=player.id, friend_id=friend.id)
-        if not relationship.exists() or relationship[0].status != 3:
+        if not relationship.exists() :
             return JsonResponse({"message": "You are not friends with this user."}, status=201)
         Messages.objects.create(sender=player, receiver=friend, content=content)
         Notification.objects.create(sender=player, type=1, recipient=friend, content=f"New message from {player.username}")
@@ -222,11 +222,19 @@ def updateSocialStatus(request):
             Friends.objects.filter(player_id=player.id, friend_id=SocialUser).update(status=3)
             Friends.objects.filter(player_id=SocialUser, friend_id=player.id).update(status=3)
         elif friend_status == -1:
+            clearChatNotif = Notification.objects.filter(sender=player, recipient=Player.objects.get(id=SocialUser), type=1)
+            clearChatNotif.delete()
+            clearChatNotif = Notification.objects.filter(sender=Player.objects.get(id=SocialUser), recipient=player, type=1)
+            clearChatNotif.delete()
             if Friends.objects.filter(player_id=player.id, friend_id=SocialUser).exists():
                 Friends.objects.filter(player_id=player.id, friend_id=SocialUser).delete()
             if Friends.objects.filter(player_id=SocialUser, friend_id=player.id).exists():
                 Friends.objects.filter(player_id=SocialUser, friend_id=player.id).delete()
         elif friend_status == -2:
+            clearChatNotif = Notification.objects.filter(sender=player, recipient=Player.objects.get(id=SocialUser), type=1)
+            clearChatNotif.delete()
+            clearChatNotif = Notification.objects.filter(sender=Player.objects.get(id=SocialUser), recipient=player, type=1)
+            clearChatNotif.delete()
             Friends.objects.filter(player_id=player.id, friend_id=SocialUser).update(status=-1)
             Friends.objects.filter(player_id=SocialUser, friend_id=player.id).update(status=-3)
         if friend_status == 0:

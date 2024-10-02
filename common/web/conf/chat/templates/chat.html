@@ -1,0 +1,23 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/chat.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/social.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/menu.css' %}">
+<div id="pannel">
+</div>
+<div id="pre-menu">
+	<div id="radial-menu">
+	</div>
+
+	<div id="pre-menu-btn">
+		<i class="fa-solid fa-bars"></i>
+	</div>
+	<div id="global-notif">
+		<div id="box-gl-notif" class="notif notif-count active">
+			<span id="gl-notif-nbr"></span>
+		</div>
+	</div>
+</div>
+<script src="{% static 'utils/js/api.js' %}"></script>
+
+<script type="module" src="{% static 'js/chat.js' %}"></script>
