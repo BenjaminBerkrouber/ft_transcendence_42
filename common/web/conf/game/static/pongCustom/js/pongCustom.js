@@ -38,7 +38,7 @@ async function showCustomManager() {
 		let customOptionBtns = document.getElementById('all_custom');
 		customOptionBtns.style.display = 'flex';
 	} catch (e) {
-		console.log(e)
+		console.error(e)
 	}
 }
 
@@ -111,7 +111,7 @@ async function toggleBackCustomManager() {
 			showCustomManager();
 		});
 	} catch (e) {
-		console.log(e)
+		console.error(e)
 	}
 }
 
@@ -138,7 +138,7 @@ async function toggleCustomManager() {
 		}
 
 	} catch (e) {
-		console.log(e)
+		console.error(e)
 	}
 }
 

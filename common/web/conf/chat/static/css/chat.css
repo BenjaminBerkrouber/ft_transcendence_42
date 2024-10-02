@@ -39,7 +39,7 @@ textarea:active {
     color: var(--to-teal-3-rgba);
 }
 
-#chat-panel {
+#chat-panel, #chat-chanel {
     display: none;
     position: fixed;
     bottom: 10px;
@@ -56,20 +56,20 @@ textarea:active {
     padding: 10px;
 }
 
-#chat-panel i {
+#chat-panel i, #chat-chanel i {
     cursor: pointer;
 }
 
-#chat-panel.active {
+#chat-panel.active, #chat-chanel.active {
     display: block;
     animation: openChatPanel 0.5s ease-in-out forwards;
 }
 
-#chat-panel.open {
+#chat-panel.open, #chat-chanel.open {
     display: block;
 }
 
-#chat-panel.closing {
+#chat-panel.closing, #chat-chanel.closing {
     animation: closeChatPanel 0.3s ease-in-out forwards;
     overflow-x: hidden;
     /* Empêche la barre de défilement horizontale pendant la fermeture */
