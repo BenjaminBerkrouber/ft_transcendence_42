@@ -4,9 +4,7 @@ from django.conf import settings
 
 urlpatterns = [
     path('', views.gameHome),
-    path('join-game/', views.joinGame),
-    path('ranked/', views.ranked),
-    path('connect4/', views.connect4),
+    
     path('pong3D/', views.pong3D),
 	
     # view valide

@@ -105,9 +105,7 @@ class IChatAppMessage {
 			let chatMessages = document.getElementById('chat-messages');
 			if (!chatMessages) return;
 			chatMessages.innerHTML = '';
-
 			let fragment = document.createDocumentFragment();
-
 			this.messages.forEach(message => {
 				const msgDiv = this.createMessageElement(message);
 				fragment.appendChild(msgDiv);
@@ -169,10 +167,8 @@ class IChatAppMessage {
 		try {
 			let messageInput = document.getElementById('message-input');
 			let chatMessages = document.getElementById('chat-messages');
-
 			if (!messageInput || !chatMessages) return;
 			messageInput.value = '';
-
 			let parentDiv = this.createErrorMessageContainer();
 			let msgDiv = this.createErrorMessage(message);
 			parentDiv.appendChild(msgDiv);
@@ -363,18 +359,14 @@ class IChatAppMessage {
 			let message = messageInput.value.trim();
 			if (!message) return;
 			messageInput.value = '';
-
 			let resp = await APIsendMessage(this.contactId, message);
-
-			if (resp.status === 201)
+			if (resp.status === 205)
 				return this.handlerErrorMessages(message);
-
 			let data = {
 				'message': message,
 				'senderId': this.userId,
 				'contactId': this.contactId
 			};
-
 			this.wsChat.sendToWebSocket(data)
 		} catch (error) {
 			console.error('Failed to progressSendMessages', error);

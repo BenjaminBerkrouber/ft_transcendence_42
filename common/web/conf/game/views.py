@@ -1,66 +1,22 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 
-from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
+from game.models import Game, Lobby, Game_Tournament, Tournament
 from users.models import Player
-from chat.models import Friends, Messages, GameInvitation, Notification
+from chat.models import GameInvitation
 
 import logging
 
 logger = logging.getLogger('print')
 
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
 from django.contrib.auth.models import User
-from rest_framework.decorators import parser_classes
-from rest_framework.parsers import FormParser
-from django.urls import reverse
-from django.contrib.auth import authenticate, login, logout as auth_logout
-import requests
-from django.http import HttpResponse, JsonResponse
-from django.core import serializers
-from django.db.models import Case, IntegerField, Sum, When
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib import messages
-from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 from django.conf import settings
-from users.login_required import login_required, not_login_required
+from users.login_required import login_required
 from django.core.exceptions import ObjectDoesNotExist
 
 
 # =============================================================================
 
-@login_required
-def joinGame(request):
-    try:
-        currentPlayer = request.user.player
-        lobby_id = request.GET.get('lobby_id', 'default_value')
-        lobby = Lobby.objects.get(UUID=lobby_id)
-        tournament = Tournament.objects.get(UUID_LOBBY=lobby)
-        tournament_games = tournament.games.all()
-        for game in tournament_games:
-            if game.players.filter(id=currentPlayer.id).exists() :
-                game_id = game.id
-
-        return HttpResponse("Player is not in any of the tournament's games. Proceed with joining logic.")
-    except Lobby.DoesNotExist:
-        return HttpResponse("Lobby does not exist.")
-    except Tournament.DoesNotExist:
-        return HttpResponse("Tournament does not exist for the given lobby.")
-    except Exception as e:
-        return HttpResponse(f"An error occurred: {str(e)}")
-
-@login_required
-def ranked(request):
-    if (request.htmx):
-        return render(request, "ranked/ranked.html")
-    return render(request, "ranked/ranked_full.html")
-
-@login_required
-def connect4(request):
-    if request.htmx:
-        return render(request, "connect4/connect4.html")
-    return render(request, "connect4/connect4_full.html")
 
 @login_required
 def pong3D(request):
@@ -109,10 +65,10 @@ def pongCustomLocal(request):
 
 @login_required
 def pongPrivGame(request):
-    # user = request.user
-    # player = Player.objects.get(username=user.username)
-    # opponentId = request.GET.get('opponent', 'default_value')
-    # opponent = Player.objects.get(id=opponentId)
+    user = request.user
+    player = Player.objects.get(username=user.username)
+    opponentId = request.GET.get('opponent', 'default_value')
+    opponent = Player.objects.get(id=opponentId)
 
     invitGame = GameInvitation.objects.filter(player1=player, player2=opponent)
     if not invitGame:

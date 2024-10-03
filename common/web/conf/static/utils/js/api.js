@@ -48,12 +48,6 @@ async function APIgetGlobalNotif(userId) {
 	});
 }
 
-async function APIremoveChatNotif(userId) {
-	return new Promise(async (resolve, reject) => {
-		resolve(await getFetchAPI(`/api/removeChatNotif?userId=${userId}`));
-	});
-}
-
 async function APIgetNbrChatNotif(userId) {
 	return new Promise(async (resolve, reject) => {
 		let nbrChatNotif = await getFetchAPI(`/api/getNbrChatNotif?userId=${userId}`);
@@ -101,10 +95,10 @@ async function APIsendMessage(contactId, message) {
             body: JSON.stringify({ contactId, message }),
         });
 
-        if (!response.ok) {
+        if (!response.ok)
             throw new Error('Network response was not ok ' + response.statusText);
-        }
-
+		if (response.status === 205)
+            return { status: 205, message: "You are not friends with this user." };
         return response.json();
     } catch (error) {
         console.error('Failed to send message:', error);
@@ -114,7 +108,7 @@ async function APIsendMessage(contactId, message) {
 
 async function APIsendGameInvite(contactId) {
     try {
-        const response = await fetch(`/api/sendInvite/`, {
+        const response = await fetch(`/api/sendGameInvite/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken'),
@@ -123,10 +117,10 @@ async function APIsendGameInvite(contactId) {
             body: JSON.stringify({ contactId }),
         });
 
-        if (!response.ok) {
+        if (!response.ok)
             throw new Error('Network response was not ok ' + response.statusText);
-        }
-
+		if (response.status === 205)
+            return { status: 205, message: "You are not friends with this user." };
         return response.json();
     } catch (error) {
         console.error('Failed to send game invite:', error);
@@ -136,7 +130,7 @@ async function APIsendGameInvite(contactId) {
 
 async function APIupdateInviteStatus(contactId, status) {
     try {
-        const response = await fetch(`/api/updateInviteStatus/`, {
+        const response = await fetch(`/api/updateGameInviteStatus/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken'),

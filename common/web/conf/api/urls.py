@@ -17,6 +17,8 @@ urlpatterns = [
     path('', views.getData),
 	path('@me/', views.get_me),
     path('getAllUsers/', views.getAllUsers),
+    path('getHashRoom/', views.getHashRoom),
+    path('getUserById/', views.getUserById),
 ]
 
 # Add URLS for users
@@ -46,25 +48,20 @@ urlpatterns += [
     path('getChatUser/', views_chat.getChatUser),
     path('getMessages/', views_chat.getMessages),
     path('sendMessage/', views_chat.sendMessage),
-    path('sendInvite/', views_chat.sendInvite),
-    path('isOnline/', views_chat.isOnline),
+    path('sendGameInvite/', views_chat.sendGameInvite),
     path('updateSocialStatus/', views_chat.updateSocialStatus),
-    path('getHashRoom/', views_chat.getHashRoom),
     path('getGlobalNotif/', views_chat.getGlobalNotif),
-    path('removeChatNotif/', views_chat.removeChatNotif),
     path('getNbrSocialNotif/', views_chat.getNbrSocialNotif),
     path('getNbrChatNotif/', views_chat.getNbrChatNotif),
-    path('updateInviteStatus/', views_chat.updateInviteStatus),
+    path('updateGameInviteStatus/', views_chat.updateGameInviteStatus),
     path('clearNotifSocial/', views_chat.clearNotifSocial),
     path('clearNotifChatForUser/', views_chat.clearNotifChatForUser),
 ]
 
 # Add URLS for game
 urlpatterns += [
-    path('getHistoryGame/', views_game.getHistoryGame),
     path('createLobby/', views_game.createLobby),
     path('getAllLobby/', views_game.getAllLobby),
-    path('getUserById/', views_game.getUserById),
     path('addPlayerToLobby/', views_game.addPlayerToLobby),
     path('getUserAvailableToLobby/', views_game.getUserAvailableToLobby),
     path('addIaToLobby/', views_game.addIaToLobby),

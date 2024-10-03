@@ -304,6 +304,7 @@ async function innerShowProgress(games, type, currentUser) {
         let href = (type === 'connect4' ? `/progress/connect4?user=${currentUser}` : `/progress/pong?user=${currentUser}`);
 		console.log(href);
 		progressButton.innerHTML = `<a id="progress-link" hx-get="${href}" hx-target="#main-content" hx-push-url="true" href="${href}" class="btn">Show My Progress</a>`
+		
 		let progressLink = document.getElementById('progress-link');
 		progressLink.addEventListener('click', async (e) => {
 			e.preventDefault();

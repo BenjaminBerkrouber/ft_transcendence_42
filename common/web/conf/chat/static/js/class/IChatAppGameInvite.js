@@ -105,11 +105,11 @@ class IChatAppGameInvite {
 			inviteBtn.addEventListener('click', async () => {
 				try {
 					let reps = await APIsendGameInvite(this.contactId);
-					// if (resp.status === 201) {
-					// 	this.errorInviteHandler();
-					// 	return;
-					// }
-
+					console.log(reps);
+					if (reps.status === 205) {
+						console.log('Invite not possible');
+						return this.errorInviteHandler();
+					}
 					this.wsChat.sendToWebSocket({
 						message: 'Game invite',
 						senderId: this.userId,
@@ -372,12 +372,13 @@ class IChatAppGameInvite {
 	 * @memberof IChatAppGameInvite
 	 */
 	async errorInviteHandler() {
-		this.removeGameInvites();
+		// this.removeGameInvites();
+		this.removeGameInvitesError();
 		let chatMessages = document.getElementById('chat-messages');
 		const parentDiv = document.createElement('div');
 		parentDiv.classList.add('error-parent-invite');
 		parentDiv.innerHTML = '<i class="fa-solid fa-circle-exclamation" style="color: #ff0000;"></i>';
-		parentDiv.innerHTML += createErrorMessageDiv();
+		parentDiv.innerHTML += this.createErrorMessageDiv();
 		chatMessages.appendChild(parentDiv);
 		chatMessages.scrollTop = chatMessages.scrollHeight;
 	}
@@ -405,6 +406,29 @@ class IChatAppGameInvite {
 				</div>
 			</div>
 		`;
+	}
+
+	/**
+	 * Removes existing game invite error messages from the chat.
+	 * 
+	 * This method finds and removes any existing error messages related to game invites
+	 * from the chat interface. It ensures that only the latest error message is displayed.
+	 * 
+	 * @async
+	 * @function removeGameInvitesError
+	 * 
+	 * @memberof IChatAppGameInvite
+	 */
+	async removeGameInvitesError() {
+		try {
+			let chatMessages = document.getElementById('chat-messages');
+			let gameInvites = chatMessages.getElementsByClassName('error-parent-invite');
+			while (gameInvites[0]) {
+				gameInvites[0].parentNode.removeChild(gameInvites[0]);
+			}
+		} catch (error) {
+			console.error('Failed to removeGameInvitesError:', error);
+		}
 	}
 
 }

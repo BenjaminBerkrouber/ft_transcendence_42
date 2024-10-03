@@ -38,23 +38,6 @@ import logging
 logger = logging.getLogger('print')
 
 
-@api_view(['GET'])
-@login_required
-def getHistoryGame(request):
-    try:
-        user = request.user
-        player = Player.objects.get(username=user)
-        games = Game.objects.filter(player1=player) | Game.objects.filter(player2=player)
-        games = games.order_by('-created_at')
-        serialized_games = serializers.serialize('json', games)
-        return Response(serialized_games, status=200)
-    
-    except Player.DoesNotExist:
-        return Response({"error": "Player not found"}, status=404)
-    
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
-
 # ===============================================================================================
 # ============================================ LOBBY ============================================
 # ===============================================================================================
@@ -97,23 +80,7 @@ def getAllLobby(request):
         return Response({"data": tab}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
-    
-@api_view(['GET'])
-@login_required
-def getUserById(request):
-    try:
-        userId = request.GET.get('userId')
-        player = Player.objects.get(id=userId)
-        player = {
-            "id": player.id,
-            "username": player.username,
-            "img": str(player.img)
-        }        
-        return Response(player, status=200)
-    except Player.DoesNotExist:
-        return Response({"error": f"Player with id {userId} does not exist"}, status=404)
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
+
     
 @csrf_exempt
 @api_view(['POST'])
@@ -576,7 +543,7 @@ def removeLobby(request):
         return Response({"error": str(e)}, status=500)
 
 # ===============================================================================================
-# ============================================ GAME Custom ============================================
+# ========================================= GAME Custom =========================================
 # ===============================================================================================
 
 @csrf_exempt
@@ -683,7 +650,7 @@ def getPongCustomData(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 # ===============================================================================================
-# ============================================ GAME MANDA ============================================
+# ========================================== GAME MANDA =========================================
 # ===============================================================================================
 
 @api_view(['GET'])
@@ -719,12 +686,15 @@ def getPongGameForUser(request):
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
+
+
+
+
 @api_view(['GET'])
 @login_required
 def getConnect4GameForUser(request):
     try:
-        userId = request.GET.get('userId')
-        player = Player.objects.get(id=userId)
+        player = Player.objects.get(id=request.GET.get('userId'))
         games = (Game.objects.filter(player1=player, finish=True, type="connect4") | Game.objects.filter(player2=player, finish=True, type="connect4"))
         games = games.order_by('-created_at')
         

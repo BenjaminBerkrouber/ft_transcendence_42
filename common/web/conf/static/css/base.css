@@ -10,8 +10,6 @@
 @import "/static/pongTournament/css/pongTournamentMatch.css";
 @import "/static/pongCustom/css/pongCustom.css";
 @import "/static/pongLocal/css/pongLocal.css";
-@import "/static/ranked/css/ranked.css";
-@import "/static/connect4/css/connect4.css";
 
 * {
     padding: 0;
