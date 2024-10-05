@@ -1,5 +1,5 @@
 @media screen and (min-width: 1024px) and (max-width: 1400px)  {
-    #username-profil {
+    #profil-username {
         font-size: 2rem;
     }
 
@@ -67,7 +67,7 @@
         justify-content: center;
     }
 
-    #username-profil {
+    #profil-username {
         font-size: 1.75rem;
     }
 
@@ -95,7 +95,7 @@
         width: 80%;
     }
 
-    #username-profil {
+    #profil-username {
         font-size: 1.60rem;
     }
 

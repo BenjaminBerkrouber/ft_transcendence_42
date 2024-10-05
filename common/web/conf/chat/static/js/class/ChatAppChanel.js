@@ -146,7 +146,7 @@ class ChatAppChanel extends IChatUi {
                 <div id="chat-header">
                     <div class="chat-head-info">
                         <div class="user-head" id="pdp-chat-panel">
-                            <a href="/visited_profil/${this.contactUser.username}/">
+                            <a href="/profil?username=${this.contactUser.username}">
                                 <img src="${this.contactUser.img.startsWith('profile_pics/') ? '/media/' + this.contactUser.img : this.contactUser.img}" alt="pp">
                             </a>
                             <span>${this.contactUser.username}</span>

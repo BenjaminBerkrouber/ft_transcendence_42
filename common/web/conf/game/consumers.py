@@ -7,7 +7,6 @@ from asgiref.sync import sync_to_async
 
 from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
 from users.models import Player
-from chat.models import Friends, Messages, GameInvitation, Notification
 
 import asyncio
 import logging
@@ -16,7 +15,6 @@ from django.utils import timezone
 
 from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
 from users.models import Player
-from chat.models import Friends, Messages, GameInvitation, Notification
 
 from django.db import DatabaseError
 from django.core.exceptions import ObjectDoesNotExist

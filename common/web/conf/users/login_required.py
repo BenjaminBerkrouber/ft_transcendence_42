@@ -9,7 +9,7 @@ from django.conf import settings
 def login_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
         if not request.user.is_authenticated:
-            return redirect(settings.LOGIN_URL)
+            return redirect('login')
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 

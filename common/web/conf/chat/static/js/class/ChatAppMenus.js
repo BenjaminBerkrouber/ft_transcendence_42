@@ -112,7 +112,7 @@ class ChatAppMenus extends IChatUi {
 			userChatContainer.innerHTML = this.chatUsers.map(user => `
                 <div class="contact" data-contact-id="${user.id}">
                     <div class="contact-status ${user.is_online ? 'online' : 'offline'}">
-                        <a href="/visited_profil/${user.username}/">
+                        <a href="/profil?username=${user.username}">
                             <img  src="${user.img.startsWith('profile_pics/') ? '/media/' + user.img : user.img}" class="contact-img" alt="${user.username}">
                             ${user.notif > 0 ? `<span class="mark-notif-chat">+${user.notif}</span>` : ''}
                         </a>

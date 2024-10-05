@@ -2,16 +2,9 @@ from typing import Any
 from django.db import models
 from django.contrib.auth.models import User
 import requests
-from django.core.exceptions import ValidationError
 
 from users.models import Player
 from game.models import Game
-
-class Friends(models.Model):
-    id = models.AutoField(primary_key=True)
-    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='player')
-    friend = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='friend')
-    status = models.IntegerField(default=0)
 
 class Messages(models.Model):
     id = models.AutoField(primary_key=True)

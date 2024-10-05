@@ -121,7 +121,7 @@ class SocialAppMenus extends IChatUi {
 			userSocialContainer.innerHTML = this.socialUsers.map(socialUser => `
                 <div class="user" id="user-${socialUser.id}">
                     <div class="data">
-                        <a href="/visited_profil/${socialUser.username}/" style="position: relative;">
+                        <a href="/profil?username=${socialUser.username}" style="position: relative;">
                             <img class="${socialUser.is_online ? 'online' : 'offline'}" src="${socialUser.img.startsWith('profile_pics/') ? '/media/' + socialUser.img : socialUser.img}" alt="pp">
                             ${socialUser.notif === 1 ? '<i class="fas fa-exclamation mark-notif"></i>' : ''}
                         </a>

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div id="login-content" class="warp-login"> 
+    <div class="container-login">
+        <div class="form-title">
+            <h1>Welcome</h1>
+            <p>Sign in to play Pong</p>
+        </div>
+
+        <div class="chose-form">
+            <button id="login-btn" class="active">Login</button>
+            <button id="register-btn">Register</button>
+        </div>
+
+        <div class="warp-form">
+            <form id="login-form" method="POST">
+                <div class="warp-input">
+                    <span class="valid-indicator" id="email-indicator" title="Invalid email format"></span>
+                    <input type="email" name="email" id="login-email" required autocomplete="email">
+                    <label for="login-email" class="input-label">Email</label>
+                </div>
+                <div class="warp-input">
+                    <span class="valid-indicator" id="password-indicator"></span>
+                    <input class="password-input" type="password" name="pass" id="login-pass" required autocomplete="current-password">
+                    <label for="togglePasswordLogin" class="input-label">Password</label>
+                    <button type="button" class="toggle-password" id="togglePasswordLogin">
+                        <i class="fa-solid fa-eye-slash"></i>
+                    </button>
+                </div>
+                <div class="warp-error">
+                    <p id="error-login-value"></p>
+                </div>
+                <div class="form-btn">
+                    <button type="submit" id="login-submit">Login</button>
+                </div>
+            </form>
+            <form id="register-form" method="POST" style="display: none;">
+                <div class="warp-input">
+                    <span class="valid-indicator" id="username-indicator-register"></span>
+                    <input type="text" name="username" id="username" required>
+                    <label for="username" class="input-label">Username</label>
+                </div>
+                <div class="warp-input">
+                    <span class="valid-indicator" id="email-indicator-register"></span>
+                    <input type="email" name="email" id="register-email" required>
+                    <label for="register-email" class="input-label">Email</label>
+                </div>
+                <div class="warp-input">
+                    <span class="valid-indicator" id="password-indicator-register"></span>
+                    <input type="password" name="pass" id="register-pass" required>
+                    <label for="register-pass" class="input-label">Password</label>
+                    <button type="button" class="toggle-password" id="togglePasswordRegister">
+                        <i class="fa-solid fa-eye-slash"></i>
+                    </button>
+                </div>
+                <div class="warp-error">
+                    <p id="error-register-value"></p>
+                </div>
+                <div class="form-btn">
+                    <button type="submit" id="register-submit">Register</button>
+                </div>
+            </form>
+        </div>
+        <div class="warp-other-connexion">
+            <div class="other-connexion-line"></div>
+            <p class="or-text">or continue with</p>
+            <div class="connexion-btn-container">
+                <button class="connexion-btn" id="btn-42">
+                    <img src="{% static 'login/img/42_Logo.png' %}" alt="42_Logo">
+                    <span>Login</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="demo">
+	<img src="{% static 'login/img/pong-demo.gif' %}" alt="pong-demo.gif">
+</div>
+
+<script type="module" src="{% static 'login/js/login.js' %}"></script>
+{% endblock %}

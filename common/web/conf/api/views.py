@@ -46,12 +46,6 @@ def get_me(request):
     return JsonResponse({'id': player.id, 'username': player.username,
                         'mail': player.mail, 'img': img, 'eloPong': player.eloPong, 'eloConnect4': player.eloConnect4})
 
-@login_required
-@api_view(['GET'])
-def getAllUsers(request):
-    u = serializers.serialize('json', Player.objects.all(), fields=('username', 'img'))
-    return HttpResponse(u, content_type='application/json')
-
 @api_view(['GET'])
 @login_required
 def getUserById(request):

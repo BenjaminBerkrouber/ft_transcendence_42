@@ -6,17 +6,12 @@ from . import views_chat
 from . import views_game
 from django.conf import settings
 
-from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
-from users.models import Player
-from chat.models import Friends, Messages, GameInvitation, Notification
-
 from django.contrib.auth import views as auth_views
 
 # Add URLS for API
 urlpatterns = [
     path('', views.getData),
 	path('@me/', views.get_me),
-    path('getAllUsers/', views.getAllUsers),
     path('getHashRoom/', views.getHashRoom),
     path('getUserById/', views.getUserById),
 ]
@@ -24,22 +19,20 @@ urlpatterns = [
 # Add URLS for users
 urlpatterns += [
     path('register-42/', views_users.register_42),
-    path('login_player/', views_users.login_player, name='login_player'),
+    path('loginPlayer/', views_users.loginPlayer, name='loginPlayer'),
     path('register_player/', views_users.register_player, name='register_player'),
     path('logout/', views_users.logout, name='logout'),
-    path('updateImg/', views_users.update_img, name='update_img'),
-    path('updateData/', views_users.update_data, name='update_data'),
+    path('updateProfilPicsPlayer/', views_users.updateProfilPicsPlayer, name='updateProfilPicsPlayer'),
+    path('updateDataPlayer/', views_users.updateDataPlayer, name='updateDataPlayer'),
     path('updatePassword/', views_users.updatePassword, name='updatePassword'),
-    path('getNumberOfGames/', views_users.getNumberOfGames),
     path('getCurrentElo/', views_users.getCurrentElo),
-    path('getMaxElo/', views_users.getMaxElo),
-    path('getAvgGameTime/', views_users.getAvgGameTime),
-    path('getMaxWinStreak/', views_users.getMaxWinStreak),
-    path('getWinrate/', views_users.getWinrate),
-    path('lastGameIsWin/', views_users.lastGameIsWin),
-    path('getPlayerGameData/', views_users.getPlayerGameData),
-    path('getMatches/', views_users.getMatches),
     path('lastConnexion/', views_users.lastConnexion),
+    path('getPlayer/', views_users.getPlayer),
+    path('getPlayerById/', views_users.getPlayerById),
+    path('getPlayerByUsername/', views_users.getPlayerByUserName),
+    path('getDataGamesPlayers/', views_users.getDataGamesPlayers),
+
+    path('players/<int:player_id>/', views_users.get_player_details, name='get_player_details'),
 ]
 
 # Add URLS for chat
@@ -60,6 +53,15 @@ urlpatterns += [
 
 # Add URLS for game
 urlpatterns += [
+    path('getNumberOfGames/', views_game.getNumberOfGames),
+    path('getMaxElo/', views_game.getMaxElo),
+    path('getAvgGameTime/', views_game.getAvgGameTime),
+    path('getMaxWinStreak/', views_game.getMaxWinStreak),
+    path('getWinrate/', views_game.getWinrate),
+    path('lastGameIsWin/', views_game.lastGameIsWin),
+    path('getPlayerGameData/', views_game.getPlayerGameData),
+    path('getMatches/', views_game.getMatches),
+
     path('createLobby/', views_game.createLobby),
     path('getAllLobby/', views_game.getAllLobby),
     path('addPlayerToLobby/', views_game.addPlayerToLobby),

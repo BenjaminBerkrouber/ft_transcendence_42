@@ -105,11 +105,8 @@ class IChatAppGameInvite {
 			inviteBtn.addEventListener('click', async () => {
 				try {
 					let reps = await APIsendGameInvite(this.contactId);
-					console.log(reps);
-					if (reps.status === 205) {
-						console.log('Invite not possible');
+					if (reps.status === 205)
 						return this.errorInviteHandler();
-					}
 					this.wsChat.sendToWebSocket({
 						message: 'Game invite',
 						senderId: this.userId,
@@ -268,7 +265,7 @@ class IChatAppGameInvite {
 
 		if (!btnJoin) return;
 		btnJoin.addEventListener('click', async () => {
-			console.log('Join lobby PongPrivGame');
+			console.info('Join lobby PongPrivGame');
 		});
 	}
 

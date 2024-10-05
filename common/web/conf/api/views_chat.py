@@ -5,6 +5,7 @@
 
 # _____________________________________ Include for [///] _____________________________________
 
+
 import requests
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -12,19 +13,23 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from users.login_required import login_required
 
+
 # _____________________________________ Include for models apps _____________________________________
 
-from django.contrib.auth.models import User
-from users.models import Player
-from game.models import Game, PongCustomGame, AIPlayer
-from chat.models import Friends, Messages, GameInvitation, Notification
+
+from users.models import Player, Friends
+from game.models import Game
+from chat.models import Messages, GameInvitation, Notification
+
 
 # _____________________________________ Include Utils _____________________________________
+
 
 from itertools import chain
 from django.db.models import Q
 from django.db.models import Count
 from django.db import DatabaseError
+from django.db import transaction
 
 
 # ======================================================================================================================
@@ -84,9 +89,9 @@ def getMessages(request):
     try:
         player = Player.objects.get(username=request.user)
         friend = Player.objects.get(id=request.GET.get('contactId'))
-        messages_sent, messages_received = get_messages_between_players(player, friend)
-        game_invitations = get_game_invitations(player, friend)
-        combined_list = annotate_messages_and_invitations(messages_sent, messages_received, game_invitations)
+        messages_sent, messages_received = _get_messages_between_players(player, friend)
+        game_invitations = _get_game_invitations(player, friend)
+        combined_list = _annotate_messages_and_invitations(messages_sent, messages_received, game_invitations)
         return Response(combined_list, status=200)
     except Player.DoesNotExist:
         return Response({"message": "One of the players does not exist."}, status=404)
@@ -95,7 +100,7 @@ def getMessages(request):
     except Exception as e:
         return Response({"message": str(e)}, status=500)
 
-def get_messages_between_players(player, friend):
+def _get_messages_between_players(player, friend):
     """
         Fetch messages sent by and received from a friend.
         Args:
@@ -110,7 +115,7 @@ def get_messages_between_players(player, friend):
     messages_received = Messages.objects.filter(sender=friend, receiver=player).values('sender', 'content', 'created_at')
     return messages_sent, messages_received
 
-def get_game_invitations(player, friend):
+def _get_game_invitations(player, friend):
     """
         Fetch game invitations sent between two players.
         Args:
@@ -121,7 +126,7 @@ def get_game_invitations(player, friend):
     """
     return GameInvitation.objects.filter(player1=player, player2=friend).values('player1', 'player2', 'status', 'created_at')
 
-def annotate_messages_and_invitations(messages_sent, messages_received, game_invitations):
+def _annotate_messages_and_invitations(messages_sent, messages_received, game_invitations):
     """
         Combine and annotate messages and game invitations.
         Args:
@@ -160,10 +165,10 @@ def sendMessage(request):
     try:
         player = Player.objects.get(username=request.user)
         friend = Player.objects.get(id=request.data.get('contactId'))
-        if not validate_friendship(player, friend):
+        if not _validate_friendship(player, friend):
             return JsonResponse({"message": "You are not friends with this user."}, status=205)
-        create_message(player, friend, request.data.get('message'))
-        create_chat_message_notification(player, friend)
+        _create_message(player, friend, request.data.get('message'))
+        _create_chat_message_notification(player, friend)
         return JsonResponse({"message": "Message sent successfully"}, status=200)
     except Player.DoesNotExist:
         return JsonResponse({"message": "One of the players does not exist."}, status=404)
@@ -172,7 +177,7 @@ def sendMessage(request):
     except Exception as e:
         return JsonResponse({"message": str(e)}, status=500)
 
-def create_message(sender, receiver, content):
+def _create_message(sender, receiver, content):
     """
         Create a new message.
         Args:
@@ -184,7 +189,7 @@ def create_message(sender, receiver, content):
     """
     return Messages.objects.create(sender=sender, receiver=receiver, content=content)
 
-def create_chat_message_notification(sender, recipient):
+def _create_chat_message_notification(sender, recipient):
     """
         Create a new notification for a new message.
         Args:
@@ -216,19 +221,19 @@ def sendGameInvite(request):
     try:        
         player = Player.objects.get(username=request.user)
         friend = Player.objects.get(id=request.data.get('contactId'))
-        if not validate_friendship(player, friend):
+        if not _validate_friendship(player, friend):
             return JsonResponse({"message": "You are not friends with this user."}, status=205)
-        clear_existing_invitations(player, friend)
-        new_game = create_game(player, friend)
-        create_game_invitations(player, friend, new_game)
-        create_game_invite_notification(player, friend, f"Game invitation from {player.username}")
+        _clear_existing_invitations(player, friend)
+        new_game = _create_game(player, friend)
+        _create_game_invitations(player, friend, new_game)
+        _create_game_invite_notification(player, friend, f"Game invitation from {player.username}")
         return Response({"message": "Invitation sent successfully"}, status=200)
     except Player.DoesNotExist:
         return Response({"message": "One of the players does not exist."}, status=404)
     except Exception as e:
         return Response({"message": str(e)}, status=500)
 
-def validate_friendship(player, friend):
+def _validate_friendship(player, friend):
     """
         Check if the players are friends.
         Args:
@@ -239,7 +244,7 @@ def validate_friendship(player, friend):
     """
     return Friends.objects.filter(player_id=player.id, friend_id=friend.id, status=3).exists()
 
-def clear_existing_invitations(player, friend):
+def _clear_existing_invitations(player, friend):
     """
 		Delete existing game invitations and associated games between two players.
 		Args:
@@ -256,7 +261,7 @@ def clear_existing_invitations(player, friend):
                 Game.objects.filter(UUID=game_id).delete()
             invitation.delete()
 
-def create_game(player, friend):
+def _create_game(player, friend):
     """
 		Create a new game between two players.
 		Args:
@@ -276,7 +281,7 @@ def create_game(player, friend):
         type='pongPv',
     )
 
-def create_game_invitations(player, friend, game):
+def _create_game_invitations(player, friend, game):
     """
 		Create game invitations for both players.
 		Args:
@@ -290,7 +295,7 @@ def create_game_invitations(player, friend, game):
         GameInvitation(player1=friend, player2=player, status=1, game_id=game)
     ])
 
-def create_game_invite_notification(sender, recipient, content):
+def _create_game_invite_notification(sender, recipient, content):
     """
 		Create a notification for a game invitation.
 		Args:
@@ -303,6 +308,7 @@ def create_game_invite_notification(sender, recipient, content):
     return Notification.objects.create(sender=sender, type=2, recipient=recipient, content=content)
 
 
+@csrf_exempt
 @api_view(['POST'])
 @login_required
 def updateGameInviteStatus(request):
@@ -317,14 +323,14 @@ def updateGameInviteStatus(request):
         player = Player.objects.get(username=request.user)
         friend = Player.objects.get(id=request.data.get('contactId'))
         status = request.data.get('status')
-        update_game_invitation_status(player, friend, status)
+        _update_game_invitation_status(player, friend, status)
         return Response({"message": "Status updated successfully"}, status=200)
     except Player.DoesNotExist:
         return Response({"error": "Player does not exist"}, status=404)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
-def update_game_invitation_status(player, friend, status):
+def _update_game_invitation_status(player, friend, status):
     """
 		Update the game invitation status between the player and their friend.
 		Args:
@@ -333,11 +339,11 @@ def update_game_invitation_status(player, friend, status):
 			status (int): The new status for the game invitation.
     """
     if status == 2:
-        update_status_for_both_invites(player, friend, 2)
+        _update_status_for_both_invites(player, friend, 2)
     elif status == -1:
-        update_status_for_both_invites(player, friend, -2)
+        _update_status_for_both_invites(player, friend, -2)
 
-def update_status_for_both_invites(player, friend, new_status):
+def _update_status_for_both_invites(player, friend, new_status):
     """
 		Update the invitation status for both players.
 		Args:
@@ -371,18 +377,18 @@ def getSocialUser(request):
     """
     try:
         player = Player.objects.get(username=request.user)
-        blocked_users = get_blocked_users(player.id)
-        social_users = get_social_users(player.id, blocked_users)
-        all_social_notifications = get_all_social_notifications(player)
+        blocked_users = _get_blocked_users(player.id)
+        social_users = _get_social_users(player.id, blocked_users)
+        all_social_notifications = _get_all_social_notifications(player)
         social_users_list = [
-            build_social_user_data(social_user, player.id, all_social_notifications) for social_user in social_users
+            _build_social_user_data(social_user, player.id, all_social_notifications) for social_user in social_users
         ]
-        sorted_social_users = sort_social_users(social_users_list)
+        sorted_social_users = _sort_social_users(social_users_list)
         return Response(sorted_social_users, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
-def get_blocked_users(player_id):
+def _get_blocked_users(player_id):
     """
 		Get a list of blocked users for the given player.
 		Args:
@@ -392,7 +398,7 @@ def get_blocked_users(player_id):
     """
     return list(Friends.objects.filter(player_id=player_id, status=-3).values_list('friend_id', flat=True))
 
-def get_social_users(player_id, blocked_users):
+def _get_social_users(player_id, blocked_users):
     """
 		Get social users for the given player, excluding blocked users.
 		Args:
@@ -403,7 +409,7 @@ def get_social_users(player_id, blocked_users):
     """
     return Player.objects.exclude(id__in=blocked_users).exclude(id=player_id).values('id', 'username', 'img')
 
-def get_all_social_notifications(player):
+def _get_all_social_notifications(player):
     """
 		Retrieve all social notifications for the given player.
 		Args:
@@ -416,7 +422,7 @@ def get_all_social_notifications(player):
         recipient=player
     ).values('sender__id', 'type', 'content', 'created_at')
 
-def build_social_user_data(social_user, player_id, notifications):
+def _build_social_user_data(social_user, player_id, notifications):
     """
 		Build a dictionary of social user data, including online status, friend status, and notification flag.
 		Args:
@@ -428,11 +434,11 @@ def build_social_user_data(social_user, player_id, notifications):
     """
     social_user_data = social_user
     social_user_data['is_online'] = Player.objects.get(id=social_user['id']).is_online
-    social_user_data['friend_status'] = getFriendStatus(player_id, social_user['id'])
+    social_user_data['friend_status'] = _getFriendStatus(player_id, social_user['id'])
     social_user_data['notif'] = 1 if any(notif['sender__id'] == social_user['id'] for notif in notifications) else 0
     return social_user_data
 
-def sort_social_users(social_users_list):
+def _sort_social_users(social_users_list):
     """
 		Sort social users based on their friendship status.
 		Args:
@@ -443,7 +449,7 @@ def sort_social_users(social_users_list):
     priority = {2: 0, 1: 1, 0: 2, 3: 3, -2: 4, -1: 5}
     return sorted(social_users_list, key=lambda x: priority[x['friend_status']])
 
-def getFriendStatus(player_id, friend_id):
+def _getFriendStatus(player_id, friend_id):
     """
 		Get the friendship status between two players.
 		Args:
@@ -466,53 +472,120 @@ def getFriendStatus(player_id, friend_id):
 @api_view(['POST'])
 @login_required
 def updateSocialStatus(request):
+    """
+        Update the friendship status between two users.
+        Args:
+            request (HttpRequest): Contains social user ID and friendship status.
+        Returns:
+            Response: Success or error message with status code.
+        Raises:
+            ValueError: If input data is invalid.
+            Player.DoesNotExist: If player does not exist.
+            Exception: For any other errors.
+    """
     try:
-        user = request.user
-        player = Player.objects.get(username=user)
-        SocialUser = request.data.get('socialUserId')
-        friend_status = request.data.get('friendStatus')
-        try:
-            friend_status = int(friend_status)
-        except ValueError:
-            return Response({"error": "friend_status doit être un entier"}, status=400)
-        try:
-            SocialUser = int(SocialUser)
-        except ValueError:
-            return Response({"error": "socialUserId doit être un entier"}, status=400)
-        if friend_status == 0:
-            if Friends.objects.filter(player_id=player.id, friend_id=SocialUser).exists():
-                Friends.objects.filter(player_id=player.id, friend_id=SocialUser).delete()
-            if Friends.objects.filter(player_id=SocialUser, friend_id=player.id).exists():
-                Friends.objects.filter(player_id=SocialUser, friend_id=player.id).delete()
-            Friends.objects.create(player_id=player.id, friend_id=SocialUser, status=1)
-            Friends.objects.create(player_id=SocialUser, friend_id=player.id, status=2)
-        elif friend_status == 2:
-            Friends.objects.filter(player_id=player.id, friend_id=SocialUser).update(status=3)
-            Friends.objects.filter(player_id=SocialUser, friend_id=player.id).update(status=3)
-        elif friend_status == -1:
-            clearChatNotif = Notification.objects.filter(sender=player, recipient=Player.objects.get(id=SocialUser), type=1)
-            clearChatNotif.delete()
-            clearChatNotif = Notification.objects.filter(sender=Player.objects.get(id=SocialUser), recipient=player, type=1)
-            clearChatNotif.delete()
-            if Friends.objects.filter(player_id=player.id, friend_id=SocialUser).exists():
-                Friends.objects.filter(player_id=player.id, friend_id=SocialUser).delete()
-            if Friends.objects.filter(player_id=SocialUser, friend_id=player.id).exists():
-                Friends.objects.filter(player_id=SocialUser, friend_id=player.id).delete()
-        elif friend_status == -2:
-            clearChatNotif = Notification.objects.filter(sender=player, recipient=Player.objects.get(id=SocialUser), type=1)
-            clearChatNotif.delete()
-            clearChatNotif = Notification.objects.filter(sender=Player.objects.get(id=SocialUser), recipient=player, type=1)
-            clearChatNotif.delete()
-            Friends.objects.filter(player_id=player.id, friend_id=SocialUser).update(status=-1)
-            Friends.objects.filter(player_id=SocialUser, friend_id=player.id).update(status=-3)
-        if friend_status == 0:
-            Notification.objects.create(sender=player, type=3, recipient=Player.objects.get(id=SocialUser), content=f"Friend request from {player.username}")
-        elif friend_status == 2:
-            Notification.objects.create(sender=player, type=4, recipient=Player.objects.get(id=SocialUser), content=f"{player.username} accepted your friend request")
+        player = Player.objects.get(username=request.user)
+        social_user_id, friend_status = _extract_social_data(request)
+        actions = {
+            0: _send_friend_request,
+            2: _accept_friend_request,
+            -1: _remove_friendship,
+            -2: _decline_friend_request,
+        }
+        if friend_status not in actions:
+            return Response({"error": "Invalid friendship action."}, status=400)
+        with transaction.atomic():
+            actions[friend_status](player, social_user_id)
         return Response({"message": "Status updated successfully"}, status=200)
+    except ValueError:
+        return Response({"error": "Invalid input data."}, status=400)
+    except Player.DoesNotExist:
+        return Response({"error": "Player does not exist."}, status=404)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
+def _extract_social_data(request):
+    """
+        Extract social user ID and friendship status from the request.
+        Args:
+            request (HttpRequest): The request object.
+        Returns:
+            tuple: Social user ID and friend status as integers.
+        Raises:
+            ValueError: If conversion to int fails.
+    """
+    social_user_id = request.data.get('socialUserId')
+    friend_status = request.data.get('friendStatus')
+    try:
+        social_user_id = int(social_user_id)
+        friend_status = int(friend_status)
+    except ValueError:
+        raise ValueError("Invalid input")
+    return social_user_id, friend_status
+
+def _send_friend_request(player, social_user_id):
+    """
+        Send a friend request to another player.
+        Args:
+            player (Player): The sender.
+            social_user_id (int): The recipient's ID.
+        Returns:
+            None: Updates database with request and status.
+        Raises:
+            Player.DoesNotExist: If the recipient does not exist.
+    """
+    social_user = Player.objects.get(id=social_user_id)
+    Notification.objects.create( sender=player, type=3, recipient=social_user, content=f"Friend request from {player.username}")
+    Friends.objects.update_or_create(player_id=player.id, friend_id=social_user_id, defaults={'status': 1})
+    Friends.objects.update_or_create(player_id=social_user_id, friend_id=player.id, defaults={'status': 2})
+
+def _accept_friend_request(player, social_user_id):
+    """
+        Accept a friend request from another player.
+        Args:
+            player (Player): The accepter.
+            social_user_id (int): The ID of the sender.
+        Returns:
+            None: Updates database with status change.
+        Raises:
+            Player.DoesNotExist: If the sender does not exist.
+    """
+    social_user = Player.objects.get(id=social_user_id)
+    Notification.objects.create( sender=player, type=4, recipient=social_user, content=f"{player.username} accepted your friend request")
+    Friends.objects.update_or_create(player_id=player.id, friend_id=social_user_id, defaults={'status': 3})
+    Friends.objects.update_or_create(player_id=social_user_id, friend_id=player.id, defaults={'status': 3})
+
+def _remove_friendship(player, social_user_id):
+    """
+        Remove a friendship with another player.
+        Args:
+            player (Player): The remover.
+            social_user_id (int): The ID of the player to remove.
+        Returns:
+            None: Updates database and deletes notifications.
+        Raises:
+            Player.DoesNotExist: If the target does not exist.
+    """
+    Notification.objects.filter(sender=player, recipient_id=social_user_id, type=1).delete()
+    Notification.objects.filter(sender_id=social_user_id, recipient=player, type=1).delete()
+    Friends.objects.filter(player_id=player.id, friend_id=social_user_id).delete()
+    Friends.objects.filter(player_id=social_user_id, friend_id=player.id).delete()
+
+def _decline_friend_request(player, social_user_id):
+    """
+        Decline a friend request from another player.
+        Args:
+            player (Player): The decliner.
+            social_user_id (int): The ID of the sender.
+        Returns:
+            None: Updates database and deletes notifications.
+        Raises:
+            Player.DoesNotExist: If the sender does not exist.
+    """
+    Notification.objects.filter(sender=player, recipient_id=social_user_id, type=1).delete()
+    Notification.objects.filter(sender_id=social_user_id, recipient=player, type=1).delete()
+    Friends.objects.filter(player_id=player.id, friend_id=social_user_id).update(status=-1)
+    Friends.objects.filter(player_id=social_user_id, friend_id=player.id).update(status=-3)
 
 
 # ======================================================================================================================
@@ -542,8 +615,10 @@ def getGlobalNotif(request):
         
         return Response(notifications, status=200)
     except Exception as e:
-        return handle_exception(e)
+        return _handle_exception(e)
 
+
+@csrf_exempt
 @api_view(['GET'])
 @login_required
 def getNbrChatNotif(request):
@@ -556,11 +631,13 @@ def getNbrChatNotif(request):
     """
     try:
         player = Player.objects.get(username=request.user.username)
-        notifications_count = count_notifications(player, [1, 2])
+        notifications_count = _count_notifications(player, [1, 2])
         return Response({"nbrNotif": notifications_count}, status=200)
     except Exception as e:
-        return handle_exception(e)
+        return _handle_exception(e)
 
+
+@csrf_exempt
 @api_view(['GET'])
 @login_required
 def getNbrSocialNotif(request):
@@ -573,11 +650,13 @@ def getNbrSocialNotif(request):
     """
     try:
         player = Player.objects.get(username=request.user.username)
-        notifications_count = count_notifications(player, [3, 4])
+        notifications_count = _count_notifications(player, [3, 4])
         return Response({"nbrNotif": notifications_count}, status=200)
     except Exception as e:
-        return handle_exception(e)
+        return _handle_exception(e)
 
+
+@csrf_exempt
 @api_view(['GET'])
 @login_required
 def clearNotifSocial(request):
@@ -590,11 +669,13 @@ def clearNotifSocial(request):
     """
     try:
         player = Player.objects.get(username=request.user.username)
-        delete_notifications_type(player, [3, 4])
+        _delete_notifications_type(player, [3, 4])
         return Response({"message": "Notifications cleared successfully"}, status=200)
     except Exception as e:
-        return handle_exception(e)
+        return _handle_exception(e)
 
+
+@csrf_exempt
 @api_view(['GET'])
 @login_required
 def clearNotifChatForUser(request):
@@ -608,34 +689,34 @@ def clearNotifChatForUser(request):
     try:
         player = Player.objects.get(username=request.user.username) 
 
-        chat_user = get_player_by_id(request.GET.get('userId'))
-        delete_notifications_between(chat_user, player, [1, 2])
+        chat_user = _get_player_by_id(request.GET.get('userId'))
+        _delete_notifications_between(chat_user, player, [1, 2])
         return Response({"message": "Notifications cleared successfully"}, status=200)
     except Exception as e:
-        return handle_exception(e)
+        return _handle_exception(e)
 
 # _____________________________________ Notif Utils  _____________________________________
 
 
-def get_player_by_id(user_id):
+def _get_player_by_id(user_id):
     """Retrieves the player object from the user ID."""
     return Player.objects.get(id=user_id)
 
-def count_notifications(player, types):
+def _count_notifications(player, types):
     """Counts the number of notifications for a player by type."""
     return sum(Notification.objects.filter(recipient=player, type=type).count() for type in types)
 
-def delete_notifications_type(player, types):
+def _delete_notifications_type(player, types):
     """Deletes notifications for a player by type."""
     for type in types:
         Notification.objects.filter(recipient=player, type=type).delete()
 
-def delete_notifications_between(sender, recipient, types):
+def _delete_notifications_between(sender, recipient, types):
     """Deletes notifications between two players by type."""
     for type in types:
         Notification.objects.filter(sender=sender, recipient=recipient, type=type).delete()
 
-def handle_exception(e):
+def _handle_exception(e):
     """Handles exceptions and returns an appropriate error message."""
     if isinstance(e, Player.DoesNotExist):
         return Response({"error": "Player does not exist"}, status=404)

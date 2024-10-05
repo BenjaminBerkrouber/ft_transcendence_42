@@ -1,9 +1,7 @@
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.dispatch import receiver
 
-from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
 from users.models import Player
-from chat.models import Friends, Messages, GameInvitation, Notification
 
 from django.utils import timezone
 from django.contrib.auth.models import User

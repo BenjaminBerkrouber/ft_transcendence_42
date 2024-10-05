@@ -23,7 +23,14 @@
 				<a hx-get="{% url 'profil' %}" hx-target="#main-content" hx-push-url="true" class="nav-link" href="{% url 'profil' %}">Profil</a>
 			</li>
 			<li class="nav-item">
-				<a id="logout" hx-get="{% url 'logout' %}" hx-target="#main-content" hx-push-url="true" class="nav-link" href="{% url 'logout' %}">Log out</a>
+				<a id="logout" 
+					hx-post="{% url 'logout' %}" 
+					hx-target="#main-content" 
+					hx-push-url="true" 
+					class="nav-link" 
+					href="#" 
+					hx-confirm="Are you sure you want to log out?" 
+					hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>Log out</a>
 			</li>
 			{% else %}
 			<li class="nav-item">

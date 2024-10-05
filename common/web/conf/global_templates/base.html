@@ -55,7 +55,6 @@
         document.body.addEventListener("htmx:historyRestore", async function(evt) {
             let userIsAuthenticated = getCookie('userIsAuthenticated');
             const isAuthenticated = userIsAuthenticated === 'true';
-            console.log("historyRestore", evt.detail)
             if (!isAuthenticated && evt.detail.path !== '/login/' && evt.detail.path !== '/') {
                 await htmx.ajax('GET', '/login/', {
                     target: '#main-content', // The target element to update
@@ -63,7 +62,6 @@
                 });
                 await history.pushState(null, '', '/login/');
                 await evt.preventDefault();
-                console.log("History Not authenticated, preventing request");
                 return;
             }
         });

@@ -1,4 +1,3 @@
-console.log('home.js loaded');
 document.querySelectorAll('.desct-mode').forEach(function(element) {
     element.addEventListener('animationend', function(event) {
         if (event.animationName === 'hideElement') {

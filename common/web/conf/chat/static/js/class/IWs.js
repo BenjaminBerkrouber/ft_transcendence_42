@@ -177,7 +177,7 @@ class IWs {
 	 * @memberof IWs
      */
     handleWebSocketOpen = () => {
-        console.log('[WebSocket] => connection opened', this.roomName);
+        console.info('[WebSocket] => connection opened', this.roomName);
     }
     
 
@@ -215,7 +215,7 @@ class IWs {
 	 * @memberof IWs
      */
     handleWebSocketClose = (event) => {
-        console.log('[WebSocket] => connection closed:', event);
+        console.info('[WebSocket] => connection closed:', event);
     }
     
     /**

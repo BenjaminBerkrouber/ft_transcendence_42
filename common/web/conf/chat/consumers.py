@@ -9,9 +9,6 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 # ______________________________ Include for models apps ____________________________
 
-from users.models import Player
-from chat.models import Friends, Messages, GameInvitation, Notification
-
 
 # ===============================================================================================
 # ======================================= SocialConsumer ========================================

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Profil{% endblock %}
+
+{% block content %}
+<div id="profil-content" class="warp-profil" data-user-id="{{ playerId }}">
+	<div class="banner-content">
+		<img src="{% static 'profil/img/banner-demo.jpg' %}" alt=" banner">
+	</div>
+	<div class="box-profil">
+		<div class="avatars" id="id-profil">
+			<img src="#" alt=" Avatar" id="profile-avatar">
+		</div>
+		<div class="user-info">
+			<div class="username-container">
+				<span id="profil-username"></span>
+				<div id="edit-profil-box-btn"></div>
+			</div>
+			<div class="user_data" id="user_data">
+				<div class="data-element"><span id="profil-firends-count"><i class="fas fa-user-friends"></i></span></div>
+				<div class="data-element"><span id="profil-tournameWin-count"><i class="fas fa-trophy"></i></span></div>
+				<div class="data-element elo-box"><span id="profil-elo-connect4"><i class="fas fa-chess-board"></i></span></div>
+				<div class="data-element elo-box"><span id="profil-elo-pong"><i class="fas fa-table-tennis"></i></span></div>
+			</div>
+		</div>
+	</div>
+	<div id="box-update-data-form"></div>
+
+	<div class="box-skill" id="box-skill">
+		<span class="title">Game Stats Dashboards</span>
+		<div class="select-game-history">
+			<div class="select-game-history-option active" data-type="pong"><i class="fas fa-table-tennis"></i></div>
+			<div class="select-game-history-option" data-type="connect4"><i class="fas fa-chess-board"></i></div>
+		</div>
+		<div class="match-legend" id="match-legend"></div>
+		<div class="match-history" id="game-history-panel"></div>
+		<div id="box-link-progress"></div>
+	</div>
+
+	<script type="module" src="{% static 'profil/js/profil.js' %}"></script>
+</div>
+{% endblock %}

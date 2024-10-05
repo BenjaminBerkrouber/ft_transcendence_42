@@ -1,10 +1,12 @@
 from typing import Any
 from django.db import models
 from django.contrib.auth.models import User
-import requests
-from django.core.exceptions import ValidationError
+
 import uuid
+
+
 from users.models import Player
+
 
 class PongCustomGame(models.Model):
     id = models.AutoField(primary_key=True)
@@ -26,16 +28,15 @@ class Game(models.Model):
     type = models.CharField(max_length=10)
     finish = models.BooleanField(default=False)
     time = models.IntegerField(default=0)
-    winner = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='winner', null=True)
-    player1 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='player1')
-    player2 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='player2')
-    elo_before_player1 = models.IntegerField()
-    elo_before_player2 = models.IntegerField()
-    elo_after_player1 = models.IntegerField(null=True) 
-    elo_after_player2 = models.IntegerField(null=True)
+    winner = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='winner_games', null=True)
     custom_game = models.ForeignKey(PongCustomGame, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+class PlayerGame(models.Model):
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='players')
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    elo_before = models.IntegerField()
+    elo_after = models.IntegerField()
 
 class Lobby(models.Model):
     UUID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
