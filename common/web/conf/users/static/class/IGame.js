@@ -33,6 +33,7 @@ class IGame {
             };
             const player = new IPlayerData();
             player.init(data);
+            console.log('init player', player);
             return player;
         });
         this.winner.init(data.winner);

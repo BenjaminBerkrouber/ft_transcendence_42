@@ -49,8 +49,8 @@ async function connectNotifSocker(userId) {
     try {
         let roomName = await APIgetHashRoom('notif_' + userId);
         roomName = roomName.roomName;
-        wsNotif = new WebSocket(`wss://${window.location.host}/ws/notif/${roomName}/`);
-
+        // wsNotif = new WebSocket(`wss://${window.location.host}/ws/notif/${roomName}/`);
+        return;
         wsNotif.onopen = function () {
             console.log('wssNotif notif connected to ', roomName);
         }

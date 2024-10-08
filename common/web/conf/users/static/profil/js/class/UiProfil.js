@@ -31,7 +31,7 @@ class UiProfile extends IDataUserManager {
             },
             "profil-tournameWin-count": {
                 value: `<i class="fas fa-trophy"></i>`,
-                func: () => null, // a FAIRE
+                func: () => this.PlayerData.getFriendsCount(), // a FAIRE
                 type: 'innerHTML'
             },
             "profil-elo-pong": {

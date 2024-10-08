@@ -27,7 +27,7 @@ from django.views.decorators.csrf import csrf_exempt
 # _____________________________________ Third-Party Imports _____________________________________
 
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 
 
@@ -35,7 +35,6 @@ from rest_framework.response import Response
 
 
 from users.models import Player, Friends
-from game.models import Game, PlayerGame
 from users.login_required import login_required, not_login_required
 
 
@@ -546,6 +545,28 @@ def lastConnexion(request):
 # ============================================= Utils Users METHODE  ===================================================
 # ======================================================================================================================
 
+import logging
+
+logger = logging.getLogger('print')
+
+
+@api_view(['GET'])
+@login_required
+def getUserById(request):
+    try:
+        userId = request.GET.get('userId')
+        player = Player.objects.get(id=userId)
+        player = {
+            "id": player.id,
+            "username": player.username,
+            "img": str(player.img)
+        }        
+        return Response(player, status=200)
+    except Player.DoesNotExist:
+        return Response({"error": f"Player with id {userId} does not exist"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
 
 @csrf_exempt
 @api_view(['GET'])
@@ -563,7 +584,6 @@ def getPlayerByUserName(request):
 
 @csrf_exempt
 @api_view(['GET'])
-@login_required
 def getPlayerById(request):
     try:
         player = Player.objects.get(id=request.query_params.get("userId"))
@@ -574,6 +594,19 @@ def getPlayerById(request):
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
+@csrf_exempt
+@api_view(['GET'])
+def getPlayersByIds(request):
+    try:
+        players_ids = request.GET.get('playersIds')
+        if not players_ids:
+            return Response({"error": "Players IDs are required"}, status=400)
+        players_ids = [int(id) for id in players_ids.split(',')]
+        players = Player.objects.filter(id__in=players_ids)
+        data = {player.id: _get_player_data_serializers(player, player.id != request.user.id) for player in players}
+        return Response(data, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
 
 @csrf_exempt
 @api_view(['GET'])
@@ -581,89 +614,12 @@ def getPlayerById(request):
 def getPlayer(request):
     try:
         player = Player.objects.get(username=request.user)
-        data = _get_player_data_serializers(player, False)
+        data = _get_player_data_serializers(player, False) 
         return Response(data, status=200)
     except Player.DoesNotExist:
         return Response({"error": "Player not found"}, status=404)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
-
-
-
-@csrf_exempt
-@api_view(['GET'])
-@login_required
-def getDataGamesPlayers(request):
-    try:
-        # createGameExemple()
-        Game.objects.all().order_by('-created_at')
-        player = Player.objects.get(id=request.GET.get('userId'))
-        data = []
-        from django.db.models import Q
-        data.append({
-            'pongGames': _get_array_game_serializers(
-                Game.objects.filter(
-                    players__player=player,
-                    finish=True,
-                    type='Pong'
-                ).order_by('-created_at')
-            )
-        })
-        data.append({
-            'connect4Games': _get_array_game_serializers(
-                Game.objects.filter(
-                    players__player=player,
-                    finish=True,
-                    type='connect4'
-                ).order_by('-created_at')
-            )
-        })
-        return Response({"data": data}, status=200)
-    except Exception as e:
-        return Response({"error here ": str(e)}, status=500)
-
-def _get_array_game_serializers(games):
-    """
-        Create a dictionary of games data.
-        Args:
-            games (Game): Array of the game object.
-        Returns:
-            dict: A dictionary containing game's details.
-    """
-    GamesSerializers = []
-    for game in games:
-        GamesSerializers.append(_get_game_serializers(game))
-    return GamesSerializers
-
-def _get_game_serializers(game):
-    """
-    Create a dictionary of game data.
-    
-    Args:
-        game (Game): The game object.
-    
-    Returns:
-        dict: A dictionary containing game's details.
-    """
-    winner_data = _get_player_data_serializers(game.winner, False) if game.winner else None
-    players_data = [
-        {
-            'player': _get_player_data_serializers(player_game.player, False) if player_game.player else None,
-            'elo_before': player_game.elo_before,
-            'elo_after': player_game.elo_after,
-        }
-        for player_game in PlayerGame.objects.filter(game=game)
-    ]
-    data = {
-        'uuidGame': game.UUID,
-        'type': game.type,
-        'players': players_data,
-        'winner': winner_data, 
-        'created_at': game.created_at,
-        'time_minutes': game.time // 60,
-        'time_seconds': game.time % 60,
-    }
-    return data
 
 
 def _get_player_data_serializers(player, isVisitedProfil):
@@ -694,24 +650,13 @@ def _get_player_data_serializers(player, isVisitedProfil):
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
-
-
-# ======================================================================================================================
-# ============================================= FOR REPLACE DATABASE ===================================================
-# ======================================================================================================================
-
+@login_required
 @api_view(['GET'])
-def get_player_details(request, player_id):
-    try:
-        player = Player.objects.get(id=player_id)
-        data = {
-            'id': player.id,
-            'username': player.username,
-            'eloPong': player.eloPong,
-            'eloConnect4': player.eloConnect4,
-            'mail': player.mail,
-            'img': player.img.url if player.img else None,
-        }
-        return Response(data)
-    except Player.DoesNotExist:
-        return Response({"error": "Player not found"}, status=404)
+def get_me(request):
+    player = Player.objects.get(username=request.user)
+    if (player.img.name.startswith("profile_pics")):
+        img = player.img.url
+    else:
+        img = player.img.name
+    return JsonResponse({'id': player.id, 'username': player.username,
+                        'mail': player.mail, 'img': img, 'eloPong': player.eloPong, 'eloConnect4': player.eloConnect4})

@@ -54,7 +54,8 @@ async function handlerHideNotif(Notifitems) {
 
 async function connectWSNotif(roomName) {
     try {
-        const wsNotif = new WebSocket(`wss://${window.location.host}/ws/notif/${roomName}/`);
+        // const wsNotif = new WebSocket(`wss://${window.location.host}/ws/notif/${roomName}/`);
+        return;
         wsNotif.onopen = function() {
             // console.log('wss Notif notif connected to ', roomName);
         };

@@ -17,6 +17,8 @@ class IPlayerData {
     }
 
     init(data) {
+        console.log(data);
+        if (!data) return;
         this.id = data.id;
         this.username = data.username;
         this.mail = data.mail;

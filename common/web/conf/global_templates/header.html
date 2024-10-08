@@ -14,7 +14,7 @@
 			</li>
 			{% if user.is_authenticated %}
 			<li class="nav-item">
-				<a hx-get="{% url 'leaderboard' %}" hx-target="#main-content" hx-push-url="true" class="nav-link" href="{% url 'leaderboard' %}">Leaderboard</a>
+				<a hx-get="#" hx-target="#main-content" hx-push-url="true" class="nav-link" href="#">Leaderboard</a>
 			</li>
 			<li class="nav-item">
 				<a hx-get="/game/" hx-target="#main-content" hx-push-url="true" href="/game/" class="nav-link">Play</a>
