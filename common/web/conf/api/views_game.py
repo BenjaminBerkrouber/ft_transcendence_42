@@ -3,35 +3,41 @@
 # # ========================================================================================================
 
 
-# ______________________________ Include for [///] ___________________________________
+# _____________________________________ Standard Library Imports _____________________________________
 
 
 import requests
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
+import random
+
+
+# _____________________________________ Django Imports _____________________________________
+
+
+from django.db.models import Q
+from django.core import serializers
+from django.db.models import IntegerField, Sum
+from django.db.models import Max
+from django.utils import timezone
 from django.http import JsonResponse
+from django.db.models import Count
 from django.views.decorators.csrf import csrf_exempt
-from users.login_required import login_required
-import requests
 
 
-# ______________________________ Include for models apps ____________________________
-
-
-from game.models import Game, PlayerGame, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
-
-# ______________________________ Include Utils _____________________________________
+# _____________________________________ Third-Party Imports _____________________________________
 
 
 from itertools import chain
-from django.db.models import Q
-from django.core import serializers
 from functools import reduce
-import random
-from django.db.models import IntegerField, Sum
-from django.db.models import Max
 from datetime import timedelta, datetime
-from django.utils import timezone
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+
+
+# _____________________________________ Local Application Imports _____________________________________
+
+
+from users.login_required import login_required
+from game.models import Game, PlayerGame, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
 
 
 # ======================================================================================================================
@@ -233,10 +239,55 @@ def createGame(request):
         logger.error(f"Error while creating game: {e}")
         return Response({"error": str(e)}, status=500)
 
+@csrf_exempt
+@api_view(['GET'])
+def getGameUUID(request):
+    try:
+        player_id = request.GET.get('userId')
+        opponent_id = request.GET.get('opponentId')
+        gameType = request.GET.get('gameType')
+        if not player_id or not opponent_id or not gameType:
+            return Response({"error": "Player ID and opponent ID are required"}, status=400)
+        game = Game.objects.filter(
+            players__player_id__in=[player_id, opponent_id], type=gameType
+        ).annotate(player_count=Count('players')).filter(player_count=2).order_by('-created_at').first()
+        if game:
+            return Response({"gameUUID": game.UUID}, status=200)
+        return Response({"gameUUID": None}, status=200)
+    except Exception as e:
+        logger.error(f"Error while getting game UUID: {e}")
+        return Response({"error": str(e)}, status=500)
 
-# # # ===============================================================================================
-# # # ============================================ LOBBY ============================================
-# # # ===============================================================================================
+
+# ===============================================================================================
+# ============================================ LOBBY ============================================
+# ===============================================================================================
+
+@api_view(['GET'])
+@login_required
+def getAllLobby(request):
+    try:
+        # user = request.user 
+        # player = Player.objects.get(username=user.username)
+        # tab = []
+        # lobbys = Lobby.objects.all().order_by('created_at')
+        # for lobby in lobbys:
+        #     if player in lobby.players.all():
+        #         nbr_players = len(lobby.players.all())
+        #         nbr_players += len(lobby.ai_players.all())
+        #         lobby_info = {
+        #             'UUID': lobby.UUID,
+        #             'name': lobby.name,
+        #             'isLocked': lobby.locked,
+        #             'nbr_players': nbr_players,
+        #             'owner': lobby.owner.id,
+        #         }
+        #         tab.append(lobby_info)
+        # return Response({"data": tab}, status=200)
+        return Response({"data": []}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
 
 # # @api_view(['GET'])
 # # @login_required
@@ -253,29 +304,6 @@ def createGame(request):
 # #     except Exception as e:
 # #         return Response({"error": str(e)}, status=500)
     
-# # @api_view(['GET'])
-# # @login_required
-# # def getAllLobby(request):
-# #     try:
-# #         user = request.user
-# #         player = Player.objects.get(username=user.username)
-# #         tab = []
-# #         lobbys = Lobby.objects.all().order_by('created_at')
-# #         for lobby in lobbys:
-# #             if player in lobby.players.all():
-# #                 nbr_players = len(lobby.players.all())
-# #                 nbr_players += len(lobby.ai_players.all())
-# #                 lobby_info = {
-# #                     'UUID': lobby.UUID,
-# #                     'name': lobby.name,
-# #                     'isLocked': lobby.locked,
-# #                     'nbr_players': nbr_players,
-# #                     'owner': lobby.owner.id,
-# #                 }
-# #                 tab.append(lobby_info)
-# #         return Response({"data": tab}, status=200)
-# #     except Exception as e:
-# #         return Response({"error": str(e)}, status=500)
 
     
 # # @csrf_exempt

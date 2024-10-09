@@ -11,6 +11,8 @@ class PongCustomGame(models.Model):
     custom_score = models.JSONField(null=True, blank=True)
     custom_animation = models.JSONField(null=True, blank=True)
 
+
+
 class Game(models.Model):
     UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     type = models.CharField(max_length=10)
@@ -25,6 +27,9 @@ class PlayerGame(models.Model):
     player_id = models.IntegerField()
     elo_before = models.IntegerField()
     elo_after = models.IntegerField(null=True, blank=True)
+
+
+
 
 class AIPlayer(models.Model):
     id = models.AutoField(primary_key=True)

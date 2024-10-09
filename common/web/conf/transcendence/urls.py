@@ -4,9 +4,7 @@ from . import views
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
-from api import consumers as consumers
 from game import consumers as game_consumers
-from two_factor.urls import urlpatterns as tf_urls
 
 
 urlpatterns = [

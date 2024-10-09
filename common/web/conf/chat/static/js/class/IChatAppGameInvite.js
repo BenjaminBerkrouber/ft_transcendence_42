@@ -269,7 +269,9 @@ class IChatAppGameInvite {
 
 		if (!btnJoin) return;
 		btnJoin.addEventListener('click', async () => {
-			console.info('Join lobby PongPrivGame');
+			let gameUUID = await APIgetGameUUID(this.userId, this.contactId, 'pongPv');
+			console.info('Join lobby PongPrivGame UUID = ', gameUUID.gameUUID);
+			window.location.href = '/game/pong/privGame?gameUUID=' + gameUUID.gameUUID;
 		});
 	}
 

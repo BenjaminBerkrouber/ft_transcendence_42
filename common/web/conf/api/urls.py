@@ -54,6 +54,10 @@ urlpatterns += [
     path('getDataGamesPlayers/', views_game.getDataGamesPlayers, name='getDataGamesPlayers'),
     path('removeGameByUUID/', views_game.removeGameByUUID, name='removeGameByUUID'),
     path('createGame/', views_game.createGame, name='createGame'),
+    path('getAllLobby/', views_game.getAllLobby),
+    path('getGameUUID/', views_game.getGameUUID),
+
+
     # path('getNumberOfGames/', views_game.getNumberOfGames),
     # path('getMaxElo/', views_game.getMaxElo),
     # path('getAvgGameTime/', views_game.getAvgGameTime),
@@ -64,7 +68,6 @@ urlpatterns += [
     # path('getMatches/', views_game.getMatches),
 
     # path('createLobby/', views_game.createLobby),
-    # path('getAllLobby/', views_game.getAllLobby),
     # path('addPlayerToLobby/', views_game.addPlayerToLobby),
     # path('getUserAvailableToLobby/', views_game.getUserAvailableToLobby),
     # path('addIaToLobby/', views_game.addIaToLobby),

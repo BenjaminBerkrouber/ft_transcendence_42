@@ -33,9 +33,6 @@ def login(request):
 # ======================================================================================================================
 
 
-# _____________________________________ Profil _____________________________________
-
-
 @login_required
 def profil(request):
     player = Player.objects.get(username=request.GET.get('username', request.user.username))

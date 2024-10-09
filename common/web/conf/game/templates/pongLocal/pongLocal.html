@@ -1,7 +1,9 @@
+{% extends 'base.html' %}
 
 {% load static %}
+{% block title %}pongLocal{% endblock %}
 
-<script src="{% static 'pongLocal/js/bundle.js' %}"></script>
+{% block content %}
 <div class="pongLocal-wrapper" id="container-pong3D">
 	<div class="video-background">
 		<!-- <video src="{% static 'home/img/pong-video.mp4' %}" autoplay loop muted></video> -->
@@ -43,7 +45,7 @@
                         <div class="control">
                             <span>UP</span>
                             <button class="btn-change-controls" data-ctrl="38" id="player2-ctrl-up">↑</button>
-                        </div>
+                        </div> 
                         <div class="control">
                             <span>DOWN</span>
                             <button class="btn-change-controls" data-ctrl="40" id="player2-ctrl-down">↓</button>
@@ -58,3 +60,6 @@
         </div>
 	</section>
 </div>
+<script src="{% static 'pongLocal/js/bundle.js' %}"></script>
+{% endblock %}
+

@@ -1,15 +1,15 @@
+{% extends 'base.html' %}
 
 {% load static %}
-{% block title %}Tournament{% endblock %}
+{% block title %}pongTournament{% endblock %}
 
+{% block content %}
 <div id="pongTournament-content" class="warp-pongTournament">
     <aside class="lobby_list">
         <div class="title-lobby-lst">
             <h1>Lobbys</h1>
         </div>
-        <div class="lobbys_box" id="all_lobby">
-    
-        </div>
+        <div class="lobbys_box" id="all_lobby"></div>
     </aside>
 
     <div id="pongTournament-btn">
@@ -25,5 +25,9 @@
             <button id="submit-lobby">Create</button>
         </div>
     </div>
-    <script src="{% static 'pongTournament/js/pongTournament.js' %}"></script>
 </div>
+<script type="module" src="{% static 'pongTournament/js/pongTournament.js' %}"></script>
+{% endblock %}
+
+{% block extra_scripts %}
+{% endblock %}

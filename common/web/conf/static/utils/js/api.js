@@ -84,6 +84,15 @@ async function APIclearNotifChatFor(userId) {
 }
 
 
+async function APIgetGameUUID(userId, opponentId, gameType) {
+	return new Promise(async (resolve, reject) => {
+		let game = await getFetchAPI(`/api/getGameUUID?userId=${userId}&opponentId=${opponentId}&gameType=${gameType}`);
+		resolve(game);
+	});
+}
+
+
+
 async function APIsendMessage(userId, contactId, message) {
     try {
         const response = await fetch(`/api/sendMessage/`, {
