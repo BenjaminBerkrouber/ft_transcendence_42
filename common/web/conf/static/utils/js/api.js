@@ -18,21 +18,21 @@ async function APIgetCurrentUser() {
 	});
 }
 
-async function APIgetChatUsers() {
+async function APIgetChatUsers(userId) {
 	return new Promise(async (resolve, reject) => {
-		resolve(await getFetchAPI("/api/getChatUser"));
+		resolve(await getFetchAPI(`/api/getChatUser?userId=${userId}`));
 	});
 }
 
-async function APIgetSocialUsers() {
+async function APIgetSocialUsers(userId) {
 	return new Promise(async (resolve, reject) => {
-		resolve(await getFetchAPI("/api/getSocialUser"));
+		resolve(await getFetchAPI(`/api/getSocialUser?userId=${userId}`));
 	});
 }
 
-async function APIgetMessages(contactId) {
+async function APIgetMessages(userId, contactId) {
 	return new Promise(async (resolve, reject) => {
-		resolve(await getFetchAPI(`/api/getMessages?contactId=${contactId}`));
+		resolve(await getFetchAPI(`/api/getMessages?userId=${userId}&contactId=${contactId}`));
 	});
 }
 
@@ -69,9 +69,9 @@ async function APIgetUserById(userId) {
 	});
 }
 
-async function APIclearNotifSocial() {
+async function APIclearNotifSocial(userId) {
 	return new Promise(async (resolve, reject) => {
-		let game = await getFetchAPI(`/api/clearNotifSocial`);
+		let game = await getFetchAPI(`/api/clearNotifSocial?userId=${userId}`);
 		resolve(game);
 	});
 }
@@ -84,7 +84,7 @@ async function APIclearNotifChatFor(userId) {
 }
 
 
-async function APIsendMessage(contactId, message) {
+async function APIsendMessage(userId, contactId, message) {
     try {
         const response = await fetch(`/api/sendMessage/`, {
             method: 'POST',
@@ -92,7 +92,7 @@ async function APIsendMessage(contactId, message) {
                 'X-CSRFToken': getCookie('csrftoken'),
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ contactId, message }),
+            body: JSON.stringify({ userId, contactId, message }),
         });
 
         if (!response.ok)
@@ -106,7 +106,7 @@ async function APIsendMessage(contactId, message) {
     }
 }
 
-async function APIsendGameInvite(contactId) {
+async function APIsendGameInvite(userId, contactId) {
     try {
         const response = await fetch(`/api/sendGameInvite/`, {
             method: 'POST',
@@ -114,7 +114,7 @@ async function APIsendGameInvite(contactId) {
                 'X-CSRFToken': getCookie('csrftoken'),
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ contactId }),
+            body: JSON.stringify({ userId, contactId }),
         });
 
         if (!response.ok)
@@ -128,7 +128,7 @@ async function APIsendGameInvite(contactId) {
     }
 }
 
-async function APIupdateInviteStatus(contactId, status) {
+async function APIupdateInviteStatus(userId, contactId, status) {
     try {
         const response = await fetch(`/api/updateGameInviteStatus/`, {
             method: 'POST',
@@ -137,6 +137,7 @@ async function APIupdateInviteStatus(contactId, status) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
+				userId: userId,
                 contactId: contactId,
                 status: status,
             }),
@@ -145,7 +146,8 @@ async function APIupdateInviteStatus(contactId, status) {
         if (!response.ok) {
             throw new Error('Network response was not ok ' + response.statusText);
         }
-
+		if (response.status === 205)
+			return { status: 205, message: "You are not friends with this user." };
         return response.json();
     } catch (error) {
         console.error('Failed to update invite status:', error);
@@ -153,14 +155,14 @@ async function APIupdateInviteStatus(contactId, status) {
     }
 }
 
-function APIupdateSocialStatus(socialUserId, friendStatus) {
+function APIupdateSocialStatus(userId, socialUserId, friendStatus) {
     return fetch("/api/updateSocialStatus/", {
         method: "POST",
         headers: {
             "X-CSRFToken": getCookie("csrftoken"),
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ socialUserId, friendStatus }),
+        body: JSON.stringify({userId,  socialUserId, friendStatus }),
     })
     .then(response => {
         if (!response.ok) {

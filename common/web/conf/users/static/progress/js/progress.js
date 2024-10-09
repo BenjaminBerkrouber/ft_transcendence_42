@@ -3,7 +3,6 @@ import * as API from '../../class/API.js';
 
 document.addEventListener('DOMContentLoaded', async function () {
 	let progressBox = document.getElementById('progress-content');
-	console.log(progressBox);
 	let userId = document.getElementById('progress-content').getAttribute('data-user-id');
 	if (!userId) {
 		console.error('User id not found');

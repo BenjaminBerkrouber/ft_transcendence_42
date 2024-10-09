@@ -75,7 +75,7 @@ class ChatAppMenus extends IChatUi {
      * @memberof ChatAppMenus
      */
 	async init() {
-		this.chatUsers = await APIgetChatUsers();
+		this.chatUsers = await APIgetChatUsers(this.userId);
 
 		await this.innerChatMenus();
 		this.displayChatMenus();
@@ -107,7 +107,7 @@ class ChatAppMenus extends IChatUi {
      */
 	async innerChatUsers() {
 		try {
-			this.chatUsers = await APIgetChatUsers();
+			this.chatUsers = await APIgetChatUsers(this.userId);
 			let userChatContainer = document.getElementById('contacts-list');
 			userChatContainer.innerHTML = this.chatUsers.map(user => `
                 <div class="contact" data-contact-id="${user.id}">

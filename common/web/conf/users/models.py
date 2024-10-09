@@ -16,9 +16,3 @@ class Player(models.Model):
 
     def __str__(self):
         return f"Player(id={self.id}, username={self.username}, eloPong={self.eloPong}, eloConnect4={self.eloConnect4})"
-
-class Friends(models.Model):
-    id = models.AutoField(primary_key=True)
-    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='player')
-    friend = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='friend')
-    status = models.IntegerField(default=0)

@@ -181,7 +181,57 @@ def  _fetch_users_data(player_ids):
         logger.error(f"Error _fetch_user_data: {e}")
         return None
 
+@csrf_exempt
+@api_view(['GET'])
+def removeGameByUUID(request):
+    try:
+        gameUUID = request.GET.get('gameUUID')
+        if not gameUUID:
+            return Response({"error": "Game UUID is required"}, status=400)
+        try:
+            game = Game.objects.get(UUID=gameUUID)
+            game.delete()
+            logger.info(f"Game with UUID {gameUUID} has been removed.")
+            return Response({"message": "Game removed successfully"}, status=200)
+        except Game.DoesNotExist:
+            return Response({"message": "no need to remove the game"}, status=200)
+    except Exception as e:
+        logger.error(f"Error while removing game: {e}")
+        return Response({"error": str(e)}, status=500)
 
+@csrf_exempt
+@api_view(['GET'])
+def createGame(request):
+    try:
+        player1 = request.GET.get('player1')
+        player2 = request.GET.get('player2')
+        game_type = request.GET.get('gameType', 'pongPv')
+
+        new_game = Game.objects.create(
+            type=game_type,
+            finish=False,
+        )
+        elo_player1 = 1000  # A FAIRE
+        elo_player2 = 1000  # A FAIRE
+
+        PlayerGame.objects.create(
+            game=new_game,
+            player_id=player1,
+            elo_before=elo_player1,
+            elo_after=None,
+        )
+
+        PlayerGame.objects.create(
+            game=new_game,
+            player_id=player2,
+            elo_before=elo_player2,
+            elo_after=None,
+        )
+        logger.info(f"  newGameUUID: {new_game.UUID}")
+        return Response(str(new_game.UUID), status=200)
+    except Exception as e:
+        logger.error(f"Error while creating game: {e}")
+        return Response({"error": str(e)}, status=500)
 
 
 # # # ===============================================================================================

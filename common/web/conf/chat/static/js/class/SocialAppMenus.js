@@ -77,7 +77,7 @@ class SocialAppMenus extends IChatUi {
 	 * @memberof SocialAppMenus
 	 */
 	async init() {
-		this.socialUsers = await APIgetSocialUsers();
+		this.socialUsers = await APIgetSocialUsers(this.userId);
 
 		let roomName = 'social_' + this.userId;
 		roomName = await APIgetHashRoom(roomName);
@@ -90,7 +90,7 @@ class SocialAppMenus extends IChatUi {
 		this.handleCloseSocialPannel();
 		if (this.socialUsers.length > 0) {
 			await this.innerSocialUser();
-			await APIclearNotifSocial();
+			await APIclearNotifSocial(this.userId);
 			this.notif.updateAllNotif();
 			this.handleUpdateStatusUser();
 		}
@@ -116,7 +116,7 @@ class SocialAppMenus extends IChatUi {
 	 */
 	async innerSocialUser() {
 		try {
-			this.socialUsers = await APIgetSocialUsers();
+			this.socialUsers = await APIgetSocialUsers(this.userId);
 			let userSocialContainer = document.getElementById('social-list');
 			userSocialContainer.innerHTML = this.socialUsers.map(socialUser => `
                 <div class="user" id="user-${socialUser.id}">
@@ -160,7 +160,7 @@ class SocialAppMenus extends IChatUi {
 		try {
 			let socialCloseBtn = document.getElementById('social-close-btn');
 			socialCloseBtn.addEventListener('click', async () => {
-				await APIclearNotifSocial();
+				await APIclearNotifSocial(this.userId);
 				this.notif.updateAllNotif();
 				this.hidePanel();
 				this.displaySubMenus();
@@ -342,7 +342,7 @@ class SocialAppMenus extends IChatUi {
 
 			await this.sendStatusUpdate(wsToUser, friendStatus);
 
-			await APIupdateSocialStatus(socialUserId, friendStatus);
+			await APIupdateSocialStatus(this.userId, socialUserId, friendStatus);
 			this.updateUserSocialUI(socialUserId, friendStatus);
 		} catch (error) {
 			console.error('Failed to update social status:', error);

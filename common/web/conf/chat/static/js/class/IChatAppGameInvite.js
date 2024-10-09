@@ -104,7 +104,7 @@ class IChatAppGameInvite {
 
 			inviteBtn.addEventListener('click', async () => {
 				try {
-					let reps = await APIsendGameInvite(this.contactId);
+					let reps = await APIsendGameInvite(this.userId, this.contactId);
 					if (reps.status === 205)
 						return this.errorInviteHandler();
 					this.wsChat.sendToWebSocket({
@@ -199,7 +199,9 @@ class IChatAppGameInvite {
 	
 			if (!btnAccept) return;
 			btnAccept.addEventListener('click', async () => {
-				const resp = await APIupdateInviteStatus(this.contactId, 2);
+				const resp = await APIupdateInviteStatus(this.userId, this.contactId, 2);
+				if (resp.status === 205)
+					return this.errorInviteHandler();
 				this.updateInviteStatusUI('<button id="join-btn" class="btn btn-join" data-tooltip="Join lobby">Join</button>');
 				this.handlersInviteResp();
 				this.wsChat.sendToWebSocket({
@@ -233,7 +235,9 @@ class IChatAppGameInvite {
 	
 			if (!btnDecline) return;
 			btnDecline.addEventListener('click', async () => {
-				const resp = await APIupdateInviteStatus(this.contactId, -1);
+				const resp = await APIupdateInviteStatus(this.userId, this.contactId, -1);
+				if (resp.status === 205)
+					return this.errorInviteHandler();
 				this.updateInviteStatusUI('<span>Declined</span>');
 				this.wsChat.sendToWebSocket({
 					message: 'Game declined',
@@ -369,7 +373,7 @@ class IChatAppGameInvite {
 	 * @memberof IChatAppGameInvite
 	 */
 	async errorInviteHandler() {
-		// this.removeGameInvites();
+		this.removeGameInvites();
 		this.removeGameInvitesError();
 		let chatMessages = document.getElementById('chat-messages');
 		const parentDiv = document.createElement('div');

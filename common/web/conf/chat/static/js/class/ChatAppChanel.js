@@ -94,7 +94,7 @@ class ChatAppChanel extends IChatUi {
 	 */
 	async init() {
 		try {
-			this.userMsg = await APIgetMessages(this.contactId)
+			this.userMsg = await APIgetMessages(this.userId, this.contactId)
 			this.innerChatChanel();
 			this.handleCloseChatChanel();
 			this.handlersRemoveBlockRelation();
@@ -285,7 +285,8 @@ class ChatAppChanel extends IChatUi {
 				link.addEventListener('click', async (event) => {
 					event.preventDefault();
 					var friendStatus = event.target.closest('button').getAttribute('data-status');
-					await APIupdateSocialStatus(this.contactId, friendStatus);
+					console.log(friendStatus);
+					await APIupdateSocialStatus(this.userId, this.contactId, friendStatus);
 				});
 			}
 		} catch (error) {

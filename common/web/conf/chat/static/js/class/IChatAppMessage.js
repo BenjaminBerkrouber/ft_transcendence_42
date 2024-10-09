@@ -234,8 +234,7 @@ class IChatAppMessage {
 	 * @memberof IChatAppMessage
 	 */
 	applyGameInviteStyle(msgDiv, message) {
-		message.status == 1 ? msgDiv.classList.add('their-message') : msgDiv.classList.add('my-message');
-
+		message.player1 == this.userId ? msgDiv.classList.add('their-message') : msgDiv.classList.add('my-message');
 		msgDiv.classList.add('game-invite');
 		msgDiv.id = 'game-invite';
 		const gameDiv = document.createElement('div');
@@ -359,7 +358,7 @@ class IChatAppMessage {
 			let message = messageInput.value.trim();
 			if (!message) return;
 			messageInput.value = '';
-			let resp = await APIsendMessage(this.contactId, message);
+			let resp = await APIsendMessage(this.userId, this.contactId, message);
 			if (resp.status === 205)
 				return this.handlerErrorMessages(message);
 			let data = {

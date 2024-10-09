@@ -34,7 +34,7 @@ from rest_framework.response import Response
 # _____________________________________ Local Application Imports _____________________________________
 
 
-from users.models import Player, Friends
+from users.models import Player
 from users.login_required import login_required, not_login_required
 
 
@@ -545,14 +545,17 @@ def lastConnexion(request):
 # ============================================= Utils Users METHODE  ===================================================
 # ======================================================================================================================
 
-import logging
-
-logger = logging.getLogger('print')
-
 
 @api_view(['GET'])
 @login_required
 def getUserById(request):
+    """
+        Retrieves a player's data by their ID.
+        Args:
+            request (HttpRequest): The HTTP request.
+        Returns:
+            Response: The player's data or an error if the player does not exist.
+    """
     try:
         userId = request.GET.get('userId')
         player = Player.objects.get(id=userId)
@@ -572,6 +575,15 @@ def getUserById(request):
 @api_view(['GET'])
 @login_required
 def getPlayerByUserName(request):
+    """
+    Retrieves a player's data by their username.
+
+    Args:
+        request (HttpRequest): The HTTP request.
+
+    Returns:
+        Response: The player's data or an error if the player does not exist.
+    """
     try:
         player = Player.objects.get(username=request.query_params.get("username"))
         data = _get_player_data_serializers(player, player.id == request.user.id)
@@ -585,6 +597,13 @@ def getPlayerByUserName(request):
 @csrf_exempt
 @api_view(['GET'])
 def getPlayerById(request):
+    """
+        Retrieves a player's data by their ID (not logged in).
+        Args:
+            request (HttpRequest): The HTTP request.
+        Returns:
+            Response: The player's data or an error if the player does not exist.
+    """
     try:
         player = Player.objects.get(id=request.query_params.get("userId"))
         data = _get_player_data_serializers(player, player.id != request.user.id)
@@ -596,7 +615,35 @@ def getPlayerById(request):
 
 @csrf_exempt
 @api_view(['GET'])
+def getAllPlayerDataExcludeIds(request):
+    """
+        Retrieves data for all players excluding certain IDs.
+        Args:
+            request (HttpRequest): The HTTP request.
+        Returns:
+            Response: The players' data or an error if exclusion fails.
+    """
+    try:
+        exclude_ids = request.GET.get('excludeIds')
+        if not exclude_ids:
+            return Response({"error": "Exclude IDs are required"}, status=400)
+        exclude_ids = [int(id) for id in exclude_ids.split(',')]
+        players = Player.objects.exclude(id__in=exclude_ids)
+        data = {player.id: _get_player_data_serializers(player, player.id != request.user.id) for player in players}
+        return Response(data, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+@csrf_exempt
+@api_view(['GET'])
 def getPlayersByIds(request):
+    """
+        Retrieves data for multiple players by their IDs.
+        Args:
+            request (HttpRequest): The HTTP request.
+        Returns:
+            Response: The players' data or an error if retrieval fails.
+    """
     try:
         players_ids = request.GET.get('playersIds')
         if not players_ids:
@@ -612,6 +659,13 @@ def getPlayersByIds(request):
 @api_view(['GET'])
 @login_required
 def getPlayer(request):
+    """
+        Retrieves data for the logged-in player.
+        Args:
+            request (HttpRequest): The HTTP request.
+        Returns:
+            Response: The player's data or an error if the player does not exist.
+    """
     try:
         player = Player.objects.get(username=request.user)
         data = _get_player_data_serializers(player, False) 
@@ -624,14 +678,15 @@ def getPlayer(request):
 
 def _get_player_data_serializers(player, isVisitedProfil):
     """
-        Create a dictionary of player data.
+        Creates a dictionary of player data.
         Args:
             player (Player): The player object.
+            isVisitedProfil (bool): Indicates whether the profile has been visited.
         Returns:
-            dict: A dictionary containing player's details.
+            dict: A dictionary containing the player's details.
     """
     try :
-        friends_count = Friends.objects.filter(player=player, status=3).count()
+        # friends_count = Friends.objects.filter(player=player, status=3).count()
         data = {
             'id': player.id,
             'username': player.username,
@@ -642,7 +697,7 @@ def _get_player_data_serializers(player, isVisitedProfil):
             'eloConnect4': player.eloConnect4,
             'is_online': player.is_online,
             'last_connection': player.lastConnexion,
-            'friends_count': friends_count,
+            'friends_count': 0, # A FAIRE
             'is42User': not player.img.name.startswith("profile_pics/"),
             'visitedProfile': isVisitedProfil,
         }
@@ -653,6 +708,13 @@ def _get_player_data_serializers(player, isVisitedProfil):
 @login_required
 @api_view(['GET'])
 def get_me(request):
+    """
+        Retrieves data for the logged-in player.
+        Args:
+            request (HttpRequest): The HTTP request.
+        Returns:
+            JsonResponse: The player's data.
+    """
     player = Player.objects.get(username=request.user)
     if (player.img.name.startswith("profile_pics")):
         img = player.img.url

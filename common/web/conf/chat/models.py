@@ -1,30 +1,31 @@
-from typing import Any
 from django.db import models
-from django.contrib.auth.models import User
-import requests
-
-from users.models import Player
-from game.models import Game
+import uuid
 
 class Messages(models.Model):
     id = models.AutoField(primary_key=True)
-    sender = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='sender')
-    receiver = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='receiver')
+    sender_id = models.IntegerField()
+    receiver_id = models.IntegerField()
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
 class GameInvitation(models.Model):
     id = models.AutoField(primary_key=True)
-    game_id = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='game')
-    player1 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='player1_invitations')
-    player2 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='player2_invitations')
+    gameUUID = models.UUIDField(default=uuid.uuid4, editable=False)
+    player1_id = models.IntegerField()
+    player2_id = models.IntegerField()
     status = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
 class Notification(models.Model):
     id = models.AutoField(primary_key=True)
-    sender = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='notif_sender')
+    sender_id = models.IntegerField()
     type = models.IntegerField()
-    recipient = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='notif_recipient')
+    recipient_id = models.IntegerField()
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+class Friends(models.Model):
+    id = models.AutoField(primary_key=True)
+    player_id = models.IntegerField()
+    friend_id = models.IntegerField()
+    status = models.IntegerField(default=0)

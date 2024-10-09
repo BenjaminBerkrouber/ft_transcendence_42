@@ -30,6 +30,7 @@ urlpatterns += [
     path('getPlayerById/', views_users.getPlayerById, name='getPlayerById'),
     path('getPlayersByIds/', views_users.getPlayersByIds, name='getPlayersByIds'),
     path('getPlayerByUsername/', views_users.getPlayerByUserName),
+    path('getAllPlayerDataExcludeIds/', views_users.getAllPlayerDataExcludeIds, name='getAllPlayerDataExcludeIds'),
 ]
 
 # Add URLS for chat
@@ -44,13 +45,15 @@ urlpatterns += [
     path('getNbrSocialNotif/', views_chat.getNbrSocialNotif),
     path('getNbrChatNotif/', views_chat.getNbrChatNotif),
     path('updateGameInviteStatus/', views_chat.updateGameInviteStatus),
-    path('clearNotifSocial/', views_chat.clearNotifSocial),
+    path('clearNotifSocial/', views_chat.clearNotifSocial, name='clearNotifSocial'),
     path('clearNotifChatForUser/', views_chat.clearNotifChatForUser),
 ]
 
 # Add URLS for game
 urlpatterns += [
-    path('getDataGamesPlayers/', views_game.getDataGamesPlayers),
+    path('getDataGamesPlayers/', views_game.getDataGamesPlayers, name='getDataGamesPlayers'),
+    path('removeGameByUUID/', views_game.removeGameByUUID, name='removeGameByUUID'),
+    path('createGame/', views_game.createGame, name='createGame'),
     # path('getNumberOfGames/', views_game.getNumberOfGames),
     # path('getMaxElo/', views_game.getMaxElo),
     # path('getAvgGameTime/', views_game.getAvgGameTime),

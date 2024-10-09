@@ -24,7 +24,7 @@ class PlayerGame(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='players')
     player_id = models.IntegerField()
     elo_before = models.IntegerField()
-    elo_after = models.IntegerField()
+    elo_after = models.IntegerField(null=True, blank=True)
 
 class AIPlayer(models.Model):
     id = models.AutoField(primary_key=True)

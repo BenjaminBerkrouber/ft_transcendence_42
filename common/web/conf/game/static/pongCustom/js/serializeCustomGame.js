@@ -195,7 +195,7 @@ async function serializeCustomGame(game) {
 			custom_animation: await serializeCustomAnimation((game && game.CustomAnimation) ? game.CustomAnimation : null),
 		};
 	} catch (e) {
-		console.log(`error in serializeCustomGame' ${e}`);
+		console.error(`error in serializeCustomGame' ${e}`);
 	}
 }
 
@@ -219,7 +219,7 @@ async function serializeCustomBall(customBall) {
 			accessory: ((customBall && customBall.option) ? customBall.option : defaultCustomValue.custom_ball.accessory.value),
 		};
 	} catch (e) {
-		console.log(`error in serializeCustomBall ${e}`)
+		console.error(`error in serializeCustomBall ${e}`)
 	}
 }
 
@@ -245,7 +245,7 @@ async function serializeCustomPlateau(CustomPlateau) {
 			limiteurColorValue: ((CustomPlateau && CustomPlateau.limiteurColorValue) ? CustomPlateau.limiteurColorValue : defaultCustomValue.custom_plateau.limiteurColor.value),
 		}
 	} catch (e) {
-		console.log(`error in serializeCustomPlateau ${e}`)
+		console.error(`error in serializeCustomPlateau ${e}`)
 	}
 }
 
@@ -259,7 +259,7 @@ async function serializeCustomPaddle(CustomPaddle) {
 			size: ((CustomPaddle && null) ? null : defaultCustomValue.custom_paddle.size.value),
 		}
 	} catch (e) {
-		console.log(`error in serializeCustomBall ${e}`)
+		console.error(`error in serializeCustomBall ${e}`)
 	}
 }
 
@@ -269,7 +269,7 @@ async function serializeCustomMap(CustomMap) {
 			background: ((CustomMap && null) ? null : defaultCustomValue.custom_map.background.value),
 		}
 	} catch (e) {
-		console.log(`error in serializeCustomBall ${e}`)
+		console.error(`error in serializeCustomBall ${e}`)
 	}
 }
 
@@ -281,7 +281,7 @@ async function serializeCustomScore(CustomScore) {
 			font: ((CustomScore && null) ? null : defaultCustomValue.custom_score.font.value),
 		}
 	} catch (e) {
-		console.log(`error in serializeCustomBall ${e}`)
+		console.error(`error in serializeCustomBall ${e}`)
 	}
 }
 
@@ -291,7 +291,7 @@ async function serializeCustomAnimation(CustomAnimation) {
 			animation: ((CustomAnimation && null) ? null : defaultCustomValue.custom_animation.animation.value),
 		}
 	} catch (e) {
-		console.log(`error in serializeCustomBall ${e}`)
+		console.error(`error in serializeCustomBall ${e}`)
 	}
 }
 
