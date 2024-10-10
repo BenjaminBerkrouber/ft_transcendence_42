@@ -115,9 +115,6 @@
     border-bottom: 1px solid var(--text-color);
 }
 
-#container-pong3D .left-player {
-}
-
 #container-pong3D .player-box__controller {
     width: 100%;
     height: 70%;

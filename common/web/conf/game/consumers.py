@@ -1,122 +1,122 @@
-# from channels.generic.websocket import AsyncWebsocketConsumer
-# from asgiref.sync import async_to_sync
-# import json
-# import random
-# from game.Class.engine import Engine
-# from asgiref.sync import sync_to_async
+from channels.generic.websocket import AsyncWebsocketConsumer
+from asgiref.sync import async_to_sync
+import json
+import random
+from game.Class.engine import Engine
+from asgiref.sync import sync_to_async
 
-# # from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
-# from game.models import Game, PongCustomGame
+# from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
+from game.models import Game, PongCustomGame
 
-# import asyncio
-# import logging
-# import hashlib
-# from django.utils import timezone
-
-
-# from django.db import DatabaseError
-# from django.core.exceptions import ObjectDoesNotExist
-# import logging 
-
-# logger = logging.getLogger('print')
-
-# server = Engine()
-
-# class GameConsumer(AsyncWebsocketConsumer):
-
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.room_name = None
-#         self.room_group_name = None
-#         self.server = server
-
-#     async def connect(self):
-#         self.room_name = self.scope['url_route']['kwargs']['game_id']
-#         self.room_group_name = f'game_{self.room_name}'
+import asyncio
+import logging
+import hashlib
+from django.utils import timezone
 
 
-#         await self.channel_layer.group_add(
-#             self.room_group_name,
-#             self.channel_name
-#         )
+from django.db import DatabaseError
+from django.core.exceptions import ObjectDoesNotExist
+import logging 
 
-#         await self.accept()
+logger = logging.getLogger('print')
 
-#     async def disconnect(self, close_code):
-#         await self.channel_layer.group_discard(
-#             self.room_group_name,
-#             self.channel_name
-#         )
+server = Engine()
 
-#     async def receive(self, text_data):
-#         text_data_json = json.loads(text_data)
-#         userId = text_data_json['userId']
-#         eventType = text_data_json['eventType']
-#         message = text_data_json['message']
+class GameConsumer(AsyncWebsocketConsumer):
 
-#         command = message.split(" | ")[1]
-#         if command == "start" and (self.server.players.__len__() == 2) and (self.server.state == "waiting"):
-#             logger.info(f"=======================================\nreceived start from game {self.server.players.__len__()}")
-#             self.server.ws = self
-#             self.server.state = "playing"
-#             self.server.thread.start()
-#             return 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.room_name = None
+        self.room_group_name = None
+        self.server = server
+
+    async def connect(self):
+        self.room_name = self.scope['url_route']['kwargs']['game_id']
+        self.room_group_name = f'game_{self.room_name}'
+
+
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
+
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
+
+    async def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        userId = text_data_json['userId']
+        eventType = text_data_json['eventType']
+        message = text_data_json['message']
+
+        command = message.split(" | ")[1]
+        if command == "start" and (self.server.players.__len__() == 2) and (self.server.state == "waiting"):
+            logger.info(f"=======================================\nreceived start from game {self.server.players.__len__()}")
+            self.server.ws = self
+            self.server.state = "playing"
+            self.server.thread.start()
+            return 
         
-#         if command == "info":
-#             # logger.info(f"received info from game {self.server.players[0]} - {userId}")
-#             if userId == self.server.players[0]:
-#                 self.server.ball.pos.x = float(message.split(' | ')[2])
-#                 self.server.ball.pos.y = float(message.split(' | ')[3])
-#                 self.server.ball.acc.x *= -1
-#                 await self.server.sendtoPlayers(json.dumps({"x": self.server.ball.acc.x, "y": self.server.ball.acc.y, "start": False}), "moveBall")
-#             return
+        if command == "info":
+            # logger.info(f"received info from game {self.server.players[0]} - {userId}")
+            if userId == self.server.players[0]:
+                self.server.ball.pos.x = float(message.split(' | ')[2])
+                self.server.ball.pos.y = float(message.split(' | ')[3])
+                self.server.ball.acc.x *= -1
+                await self.server.sendtoPlayers(json.dumps({"x": self.server.ball.acc.x, "y": self.server.ball.acc.y, "start": False}), "moveBall")
+            return
         
-#         if command == "reset":
-#             if userId == self.server.players[0]:
-#             # logger.info(f"received reset from game {self.server.players[0]} - {userId}")
-#                 self.server.ball.pos.x = 0
-#                 self.server.ball.pos.y = 0
-#                 self.server.ball.acc.x = 0.1
-#                 self.server.ball.acc.y = 0
-#                 await self.server.sendtoPlayers(json.dumps({"x": self.server.ball.acc.x, "y": self.server.ball.acc.y, "start": False}), "resetBall")   
-#             return
+        if command == "reset":
+            if userId == self.server.players[0]:
+            # logger.info(f"received reset from game {self.server.players[0]} - {userId}")
+                self.server.ball.pos.x = 0
+                self.server.ball.pos.y = 0
+                self.server.ball.acc.x = 0.1
+                self.server.ball.acc.y = 0
+                await self.server.sendtoPlayers(json.dumps({"x": self.server.ball.acc.x, "y": self.server.ball.acc.y, "start": False}), "resetBall")   
+            return
 		
-#         if command == "ready":
-#             self.server.players.append(userId)
-#             logger.info(f"received ready from game {self.server.players.__len__()}")
-#             for player in self.server.players:
-#                 logger.info(f"player: {player}")
-#             # return 
+        if command == "ready":
+            self.server.players.append(userId)
+            logger.info(f"received ready from game {self.server.players.__len__()}")
+            for player in self.server.players:
+                logger.info(f"player: {player}")
+            # return 
 
-#         await self.channel_layer.group_send(
-#             self.room_group_name,
-#             {
-#                 'type': 'game_update',
-#                 'userId' : userId,
-#                 'eventType': eventType,
-#                 'message': message
-#             }
-#         )
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'game_update',
+                'userId' : userId,
+                'eventType': eventType,
+                'message': message
+            }
+        )
     
-#     async def game_update(self, event):
-#         userId = event['userId']
-#         eventType = event['eventType']
-#         message = event['message']
+    async def game_update(self, event):
+        userId = event['userId']
+        eventType = event['eventType']
+        message = event['message']
 
 
-#         await self.send(text_data=json.dumps({
-#             'userId' : userId,
-#             'eventType': eventType,
-#             'message': message,
-#         }))
+        await self.send(text_data=json.dumps({
+            'userId' : userId,
+            'eventType': eventType,
+            'message': message,
+        }))
 
-# # def get_games(tournament_uuid):
-# #     return list(Game_Tournament.objects.filter(UUID_TOURNAMENT=tournament_uuid))
+# def get_games(tournament_uuid):
+#     return list(Game_Tournament.objects.filter(UUID_TOURNAMENT=tournament_uuid))
 
-# # def get_player(game_id):
-# #     game_tournament = Game_Tournament.objects.get(id=game_id)
-# #     players_list = list(game_tournament.players.all())
-# #     return players_list
+# def get_player(game_id):
+#     game_tournament = Game_Tournament.objects.get(id=game_id)
+#     players_list = list(game_tournament.players.all())
+#     return players_list
 
 
 # # class LobbyConsumer(AsyncWebsocketConsumer):

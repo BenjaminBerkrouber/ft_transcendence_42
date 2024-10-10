@@ -10,6 +10,7 @@ class IGame {
         this.time_seconds = 0;
         this.created_at = null;
         this.eloAtEnd = 0;
+        this.isStarted = false;
     }
 
     init(data) {
@@ -62,6 +63,10 @@ class IGame {
         return this.players.find(player => player.getId() === id).getEloAfterGameDiff();
     }
 
+    getNbrPlayers() {
+        return this.players.length;
+    }
+
     getWinner() {
         return this.winner;
     }
@@ -82,6 +87,14 @@ class IGame {
         return this.isWinner(player) ? 'Win' : 'Lose';
     }
 
+    getIsStarted() {
+        return this.isStarted;
+    }
+
+    setIsStarted(isStarted) {
+        this.isStarted = isStarted;
+    }
+
     isWinner(player) {
         return this.winner.getId() === player.getId();
     }
@@ -92,9 +105,9 @@ class IGame {
             "Winner": this.winner.getUsername(),
             "Created at HHMMSS": this.created_at.split('T')[1].split('.')[0],
         };
-        // this.players.forEach((player, index) => {
-        //     tableData[`Player ${index + 1}`] = player.getUsername() + ' ' + (this.isWinner(player) ? 'Winner' : 'Loser');
-        // });
+        this.players.forEach((player, index) => {
+            tableData[`Player ${index + 1}`] = player.getUsername() + ' ' + (this.isWinner(player) ? 'Winner' : 'Loser');
+        });
     
         console.table([tableData]);
     }

@@ -178,13 +178,17 @@ def pongPrivGame(request):
         gameUUID = request.GET.get('gameUUID', '-1')
         logger.info(f"gameUUID: {gameUUID}")
         if gameUUID == '-1':
+            logger.error(f"NO gameUUID: {gameUUID}")
             return render(request, "homeGame/homeGame.html")
         game = Game.objects.get(UUID=gameUUID)
         if game is None:
+            logger.error(f"NO game: {game}")
             return render(request, "homeGame/homeGame.html")
         logger.info(f"game: {game}")
-        return render(request, "pongPrivGame/pongPrivGame.html", game.UUID)
+        context = {'gameUUID': game.UUID}
+        return render(request, "pongPrivGame/pongPrivGame.html", context)
     except Exception as e:
+        logger.error(f"Error: {e}")
         return render(request, "homeGame/homeGame.html")
 
 

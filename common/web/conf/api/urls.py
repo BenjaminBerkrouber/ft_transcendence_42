@@ -56,6 +56,7 @@ urlpatterns += [
     path('createGame/', views_game.createGame, name='createGame'),
     path('getAllLobby/', views_game.getAllLobby),
     path('getGameUUID/', views_game.getGameUUID),
+    path('getGameData/', views_game.getGameData),
 
 
     # path('getNumberOfGames/', views_game.getNumberOfGames),

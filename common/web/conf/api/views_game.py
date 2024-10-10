@@ -31,6 +31,7 @@ from functools import reduce
 from datetime import timedelta, datetime
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+BASE_URL = "https://172.17.0.1"
 
 
 # _____________________________________ Local Application Imports _____________________________________
@@ -77,115 +78,6 @@ def getDataGamesPlayers(request):
         return Response({"data": data}, status=200)
     except Exception as e:
         return Response({"error here ": str(e)}, status=500)
-
-
-def _get_array_game_serializers(games):
-    """
-        Create a dictionary of games data.
-        Args:
-            games (Game): Array of the game object.
-        Returns:
-            dict: A dictionary containing game's details.
-    """
-    try:
-        GamesSerializers = []
-        for game in games:
-            GamesSerializers.append(_get_game_serializers(game))
-        return GamesSerializers
-    except Exception as e:
-        logger.info(f"Error _get_array_game_serializers: {e}")
-        return None
-
-def _get_game_serializers(game):
-    """
-        Create a dictionary of game data.
-        Args:
-            game (Game): The game object.
-        Returns:
-            dict: A dictionary containing game's details.
-    """
-    try:
-        winner_data = None
-        if game.winner_id:
-            winner_data = _fetch_user_data(game.winner_id)
-        
-        all_player_ids = set()
-        player_games = PlayerGame.objects.filter(game=game)
-        for player_game in player_games:
-            if player_game.player_id:
-                all_player_ids.add(player_game.player_id)
-
-        player_data_map = _fetch_users_data(list(all_player_ids))
-        players_data = [
-            {
-                'player': player_data_map.get(str(player_game.player_id)),
-                'elo_before': player_game.elo_before,
-                'elo_after': player_game.elo_after,
-            }
-            for player_game in PlayerGame.objects.filter(game=game)
-        ]
-        data = {
-            'uuidGame': game.UUID,
-            'type': game.type,
-            'players': players_data,
-            'winner': winner_data, 
-            'created_at': game.created_at,
-            'time_minutes': game.time // 60,
-            'time_seconds': game.time % 60,
-        }
-        return data
-    except Exception as e:
-        logger.info(f"Error _get_game_serializers: {e}")
-        return None
-
-def _fetch_user_data(player_id):
-    """
-    Effectue une requête à l'API pour récupérer les données du joueur.
-    """
-    try:
-        base_url = "https://host.docker.internal"
-        url = f"{base_url}/api/getPlayerById?userId={player_id}"
-        response = requests.get(url, verify=False)
-        if response.status_code == 200:
-            try:
-                json_data = response.json()
-                return json_data
-            except ValueError:
-                return None
-        else:
-            logger.info(f"Error status _fetch_user_data: {response.status_code}")
-            return None
-    except requests.RequestException as e:
-        logger.error(f"Error request _fetch_user_data: {e}")
-        return None
-    except Exception as e:
-        logger.error(f"Error _fetch_user_data: {e}")
-        return None
-
-def  _fetch_users_data(player_ids):
-    """
-    Effectue une requête à l'API pour récupérer les données du joueur.
-    """
-    try:
-        player_ids_str = ','.join(map(str, player_ids))
-        base_url = "https://host.docker.internal"
-        url = f"{base_url}/api/getPlayersByIds?playersIds={player_ids_str}"        
-        response = requests.get(url, verify=False)
-        if response.status_code == 200:
-            try:
-                json_data = response.json()
-                return json_data
-            except ValueError:
-                return None
-        else:
-            logger.info(f"Error status _fetch_user_data: {response.status_code}")
-            return None
-    except requests.RequestException as e:
-        logger.error(f"Error request _fetch_user_data: {e}")
-        return None
-    except Exception as e:
-        logger.error(f"Error _fetch_user_data: {e}")
-        return None
 
 @csrf_exempt
 @api_view(['GET'])
@@ -258,6 +150,21 @@ def getGameUUID(request):
         logger.error(f"Error while getting game UUID: {e}")
         return Response({"error": str(e)}, status=500)
 
+@csrf_exempt
+@api_view(['GET'])
+def getGameData(request):
+    try:
+        gameUUID = request.GET.get('gameUUID')
+        if not gameUUID:
+            return Response({"error": "Game UUID is required"}, status=400)
+        game = Game.objects.get(UUID=gameUUID)
+        data = _get_game_serializers(game)
+        logger.info(f"  data: {data}")
+        return Response({"data": data}, status=200)
+    except Game.DoesNotExist:
+        return Response({"error": f"Game with id {gameUUID} does not exist"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
 
 # ===============================================================================================
 # ============================================ LOBBY ============================================
@@ -1201,3 +1108,114 @@ def getAllLobby(request):
 #             player.save()
 
 #     return "40 games have been generated successfully!"
+
+
+def _get_array_game_serializers(games):
+    """
+        Create a dictionary of games data.
+        Args:
+            games (Game): Array of the game object.
+        Returns:
+            dict: A dictionary containing game's details.
+    """
+    try:
+        GamesSerializers = []
+        for game in games:
+            GamesSerializers.append(_get_game_serializers(game))
+        return GamesSerializers
+    except Exception as e:
+        logger.info(f"Error _get_array_game_serializers: {e}")
+        return None
+
+def _get_game_serializers(game):
+    """
+        Create a dictionary of game data.
+        Args:
+            game (Game): The game object.
+        Returns:
+            dict: A dictionary containing game's details.
+    """
+    try:
+        winner_data = None
+        if game.winner_id:
+            winner_data = _fetch_user_data(game.winner_id)
+        
+        all_player_ids = set()
+        player_games = PlayerGame.objects.filter(game=game)
+        for player_game in player_games:
+            if player_game.player_id:
+                all_player_ids.add(player_game.player_id)
+
+        player_data_map = _fetch_users_data(list(all_player_ids))
+        players_data = [
+            {
+                'player': player_data_map.get(str(player_game.player_id)),
+                'elo_before': player_game.elo_before,
+                'elo_after': player_game.elo_after,
+            }
+            for player_game in PlayerGame.objects.filter(game=game)
+        ]
+        data = {
+            'uuidGame': game.UUID,
+            'type': game.type,
+            'players': players_data,
+            'winner': winner_data, 
+            'created_at': game.created_at,
+            'time_minutes': game.time // 60,
+            'time_seconds': game.time % 60,
+        }
+        return data
+    except Exception as e:
+        logger.info(f"Error _get_game_serializers: {e}")
+        return None
+
+
+
+def _fetch_user_data(player_id: int) -> dict:
+    """
+    Fetch player data from the API.
+    
+    Args:
+        player_id (int): The ID of the player.
+    
+    Returns:
+        dict: The player data or None if an error occurs.
+    """
+    url = f"{BASE_URL}/api/getPlayerById?userId={player_id}"
+    return _make_request(url)
+
+def _fetch_users_data(player_ids: list[int]) -> dict:
+    """
+    Fetch data for multiple players from the API.
+    
+    Args:
+        player_ids (list[int]): A list of player IDs.
+    
+    Returns:
+        dict: The players' data or None if an error occurs.
+    """
+    player_ids_str = ','.join(map(str, player_ids))
+    url = f"{BASE_URL}/api/getPlayersByIds?playersIds={player_ids_str}"
+    return _make_request(url)
+
+def _make_request(url: str) -> dict:
+    """ 
+        Make a GET request and return JSON data or None.
+        Args:
+            url (str): The URL for the request.
+        Returns:
+            dict: The JSON response data or None if an error occurs.
+    """
+    try:
+        response = requests.get(url, verify=False)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        logger.error(f"Request error: {e}")
+        return None
+    except ValueError:
+        logger.error("Failed to parse JSON response.")
+        return None
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return None

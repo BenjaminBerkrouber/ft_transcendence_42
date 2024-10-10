@@ -1,48 +1,24 @@
-{% load i18n %}
+{% extends 'base.html' %}
 {% load static %}
+{% block title %}pongPrivGame{% endblock %}
+
+{% block custom_css %}
 <link rel="stylesheet" type="text/css" href="{% static 'pongPrivGame/css/pongPrivGame.css' %}">
+{% endblock %}
+
+{% block content %}
 <div class="pongPrivGame-wrapper" id="container-pong3D">
 	<div class="video-background">
-		<video src="{% static 'home/img/pong-video.mp4' %}" autoplay loop muted></video>
+		<!-- <video src="{% static 'home/img/pong-video.mp4' %}" autoplay loop muted></video> -->
 	</div>
-	<section class="play-box" id="lst-players" data-players="{{ game.p1Id}},{{ game.p2Id}}">
+	<section class="play-box" id="gameUUID" data-gameUUID="{{ gameUUID }}">
 		<div class="play-box__header"> 
             <span class="title">PONG Priv Game </span>
 		</div>
-		<div class="play-box__content">
-            <div class="left-player box-player" id="first-player" data-id="{{ player.id }}">
-                <div class="player-box__username">
-                    <div class="username">
-                        <span class="username" id="player1_username">{{ player.username }}</span>
-                    </div>
-                    <div class="img">
-                        <img src="{{ player.img }}" alt="pp">
-                    </div>
-                    <div class="status">
-                        <span id="p1_status">Not ready</span>
-                    </div>
-                </div>
-            </div>
-            <div class="right-player box-player" id="second-player" data-id="{{ opponent.id }}">
-                <div class="player-box__username notLog">
-                    <div class="username">
-                        <span class="username" id="player1_username">{{ opponent.username }}</span>
-                    </div>
-                    <div class="img">
-                        <img src="{{ opponent.img }}" alt="pp">
-                    </div>
-                    <div class="status">
-                        <span id="p2_status">Not ready</span>
-                    </div>
-                </div>
-                <div id="loader-container">
-                    <div class="loader"></div>
-                </div>
-            </div>
-        </div>
+		<div class="play-box__content" id="box_player"></div>
         <div class="play-box__footer" id="box-btn">
             <button class="btn-custom-game" id="curstom-game"><i class="fa-solid fa-screwdriver-wrench"></i></button>
-            <button class="btn-ready-game" id="ready-game">Make Ready</button>
+            <button class="btn-ready-game" id="btn-make-ready">Make Ready</button>
         </div>
 	</section>
 </div>
@@ -63,4 +39,7 @@
 		}
 	}
 </script>
-<script src="{% static 'pongPrivGame/js/bundle.js' %}"></script>
+<script type="module" src="{% static 'pongPrivGame/js/pongPrivGame.js' %}"></script>
+{% endblock %}
+
+

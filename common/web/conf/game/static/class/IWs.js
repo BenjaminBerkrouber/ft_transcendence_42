@@ -54,26 +54,48 @@ class IWs {
     /**
      * Initializes the WebSocket connection and sets up handlers.
      * 
-     * This method attempts to establish a WebSocket connection by calling the `connectWebSocket` method.
-     * Once the connection is initialized, it sets up the WebSocket event handlers using `setupWebSocketHandlers`.
-     * If the initialization fails, an error is logged in the console.
+     * Waits until the WebSocket connection is successfully opened before resolving.
      * 
      * @async
      * @function init
-     * 
-     * @throws {Error} Logs an error if the WebSocket connection or setup process fails.
+     * @returns {Promise<void>} Resolves once the WebSocket connection is established.
+     * @throws {Error} Throws an error if the WebSocket connection or setup process fails.
 	 * 
 	 * @memberof IWs
      */
     async init() {
         try {
             this.ws = this.connectWebSocket();
+
+            await this.waitForWebSocketOpen();
+
             this.setupWebSocketHandlers();
         } catch (error) {
             console.error('Failed to init', error);
+            throw error;
         }
     }
 
+    /**
+     * Waits for the WebSocket to be open before proceeding.
+     * 
+     * @returns {Promise<void>} Resolves once the WebSocket connection is open.
+     * 
+     * @memberof IWs
+     */
+    waitForWebSocketOpen() {
+        return new Promise((resolve, reject) => {
+            this.ws.onopen = () => {
+                console.info('[WebSocket] => connection opened', this.roomName);
+                resolve();
+            };
+
+            this.ws.onerror = (error) => {
+                console.error('[WebSocket] => connection error:', error);
+                reject(error);
+            };
+        });
+    }
 
 	// ===============================================================================================
 	// =========================================== WS Gestion ========================================

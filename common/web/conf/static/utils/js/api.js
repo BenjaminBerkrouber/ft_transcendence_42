@@ -91,6 +91,12 @@ async function APIgetGameUUID(userId, opponentId, gameType) {
 	});
 }
 
+async function APIgetGameData(gameUUID) {
+	return new Promise(async (resolve, reject) => {
+		let game = await getFetchAPI(`/api/getGameData?gameUUID=${gameUUID}`);
+		resolve(game);
+	});
+}
 
 
 async function APIsendMessage(userId, contactId, message) {

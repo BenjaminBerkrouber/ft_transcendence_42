@@ -109,9 +109,6 @@
     margin-bottom: 20px;
 }
 
-.left-player {
-}
-
 .box-player {
     width: 40%;
     height: 100%;
@@ -269,7 +266,7 @@
         flex-direction: column;
     }
 
-    #first-player, #second-player {
+    .box-player {
         width: 90%;
         height: 45%;
         overflow: hidden;
@@ -332,7 +329,7 @@
         flex-direction: column;
     }
 
-    #first-player, #second-player {
+    .box-player {
         width: 100%;
         height: 45%;
     }
