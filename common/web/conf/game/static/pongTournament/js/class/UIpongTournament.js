@@ -4,70 +4,95 @@ class UIpongTournament {
     constructor() {
         this.userId = null; 
         this.lobbys = [];
-        this.init();
     }
 
     init(userData, lobbysData) {
-        console.log('UIpongTournament init');
         this.userId = userData.id;
-        this.lobbys = lobbysData.map(lobbyData => {
+        this.lobbys = lobbysData.data.map(lobbyData => {
             const lobby = new ILobby();
-            lobby.init(lobbyData);
+            lobby.init(lobbyData, this.userId);
             return lobby;
         });
+        this.handlersCreateLobby();
     }
 
-    async innerAllLobby() {
+
+    async handlersCreateLobby() {
         try {
-            let lobbyBox = document.getElementById('all_lobby');
-            for (let i = 0; i < this.lobbys.length; i++) {
-                let lobby = this.lobbys[i];
-                let lobbyDiv = document.createElement('div');
-                lobbyDiv.classList.add('lobby-element');
-                lobbyDiv.innerHTML = `
-                    <div id="${lobby.UUID}" class="lobby-element-data">
-                        <span>${lobby.name}</span>
-                        <div>
-                            <span>${lobby.nbr_players} <i class="fa-solid fa-user"></i></span>
-                            <span>${lobby.isLocked ? '🟢' : '🟡'}</span>
-                        </div>
-                    </div>
-                `;
-                if (lobby.owner === userId) {
-                    lobbyDiv.innerHTML += `
-                        <div class="lobby-element-btn"><span id="remove-{${lobby.UUID}}" class="remove-btn" data-lobbyUUID="${lobby.UUID}"><i class="fa-solid fa-xmark"></i></span></div>
-                    `;
-                }
-                lobbyBox.appendChild(lobbyDiv);
-            }
+            let newTournamentBtn = document.getElementById('pongTournament-btn');
+            if (!newTournamentBtn) return;
+            newTournamentBtn.addEventListener('click', this.innerNewLobbyForm.bind(this));
         } catch (error) {
-            console.error('Failed to innerAllLobby', error);
+            console.error('Failed to handlersCreateLobby', error);
         }
     }
 
-    async handlersJoinLobby() {
+    innerNewLobbyForm() {
         try {
-            let allLobby = document.getElementsByClassName('lobby-element-data');
-            for (let i = 0; i < allLobby.length; i++) {
-                if (AllLobby.has(allLobby[i].id))
-                    continue;
-    
-                allLobby[i].addEventListener('click', async function () {
-                    let lobbyId = allLobby[i].id;
-                    htmx.ajax('GET', `/game/pong/tournament/lobby?lobby_id=${lobbyId}`, {
-                        target: '#main-content',
-                        swap: 'innerHTML',
-                    }).then(response => {
-                        history.pushState({}, '', `/game/pong/tournament/lobby?lobby_id=${lobbyId}`);
-                    });
-                });
-                AllLobby.add(allLobby[i].children[0].id);
-            }
+            let pongTournamentForm = document.getElementById('pongTournament-form');
+            if (!pongTournamentForm) return;
+            pongTournamentForm.innerHTML = `
+                <div class="lobby-form-head">
+                    <span>Create your Tournament</span>
+                    <span id="cancel-form"><i class="fas fa-xmark"></i></span>
+                </div>
+                <div class="lobby-form-main">
+                    <input id="lobby-name" type="text" placeholder="tournamentName" value="tournamentName">
+                    <button id="submit-lobby">Create</button>
+                </div>
+            `;
+            pongTournamentForm.style.display = 'block';
+            this.handlersSubmitLobbyForm();
+            this.toggleCancelLobbyForm();
         } catch (error) {
-            console.error('Failed to joinLobby', error);
+            console.error('Failed to innerNewLobbyForm', error);
         }
     }
 
+
+    async handlersSubmitLobbyForm() {
+        try {
+            let submitBtn = document.getElementById('submit-lobby');
+            if (!submitBtn) return;
+            submitBtn.addEventListener('click', this.toggleSubmitForm.bind(this));
+        } catch (error) {
+            console.error('Failed to handlersSubmitLobbyForm', error);
+        }
+    }
+
+    async toggleSubmitForm(event) {
+        event.preventDefault();
+        let lobbyName = document.getElementById('lobby-name').value;
+        if (!/^[a-zA-Z]{3,20}$/.test(lobbyName))
+            return alert('Please enter a valid name for the lobby (3-20 letters only)');
+        console.log('toggleSubmitForm', lobbyName, this.userId);
+        let newLobby = await APIcreateLobby(this.userId, lobbyName);
+        console.log('newLobby', newLobby.data);
+        let lobby = new ILobby();
+        lobby.init(newLobby.data, this.userId);
+        this.hideLobbyFrom()
+    }
+
+    async toggleCancelLobbyForm() {
+        try {
+            let cancelBtn = document.getElementById('cancel-form');
+            if (!cancelBtn) return;
+            cancelBtn.addEventListener('click', this.hideLobbyFrom.bind(this));
+        } catch (error) {
+            console.error('Failed to toggleCancelLobbyForm', error);
+        }
+    }
+
+    async hideLobbyFrom() {
+        try {
+            let pongTournamentForm = document.getElementById('pongTournament-form');
+            if (!pongTournamentForm) return;
+            pongTournamentForm.style.display = 'none';
+            pongTournamentForm.innerHTML = '';
+        } catch (error) {
+            console.error('Failed to removeLobbyFrom', error);
+        }
+    }
 }
 
 export default UIpongTournament;

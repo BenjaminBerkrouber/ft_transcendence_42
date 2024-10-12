@@ -123,12 +123,12 @@ class Lobby(models.Model):
         name (CharField): Name of the lobby, default is 'Lobby'.
     """
     UUID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255, unique=False, null=False, default='Lobby')
+    locked = models.BooleanField(default=False)
     owner_id = models.IntegerField(null=True, blank=True)
     players_ids = models.JSONField(default=list)
     ai_players = models.ManyToManyField('AIPlayer', related_name='lobbies', blank=True)
-    locked = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    name = models.CharField(max_length=255, unique=False, null=False, default='Lobby')
 
     def lock(self):
         """

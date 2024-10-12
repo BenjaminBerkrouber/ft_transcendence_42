@@ -7,7 +7,7 @@ urlpatterns = [
     path('pong/local/', views.pongLocal),
 	path('pong/pongRanked/', views.pongRanked),
     path('pong/tournament/', views.pongTournament),
-    # path('pong/tournament/lobby/', views.pongTournamentLobby),
+    path('pong/tournament/lobby/', views.pongTournamentLobby),
     # path('pong/tournament/game/', views.pongTournamentGame),
 	path('pong/pongIa/', views.pongIa),
     path('pong/custom/', views.pongCustom),

@@ -215,9 +215,9 @@ async function APIcreateLobby(userId, lobbyName) {
 	});
 }
 
-async function APIgetAllLobby() {
+async function APIgetAllLobby(userId) {
 	return new Promise(async (resolve, reject) => {
-		let allLobby = await getFetchAPI(`/api/getAllLobby`);
+		let allLobby = await getFetchAPI(`/api/getAllLobby?userId=${userId}`);
 		resolve(allLobby);
 	});
 }
@@ -229,20 +229,6 @@ async function APIgetTournamentInfo(tournamentUUID) {
 	});
 }
 
-
-async function APIgetConnect4GameForUser(userId) {
-	return new Promise(async (resolve, reject) => {
-		let game = await getFetchAPI(`/api/getConnect4GameForUser?userId=${userId}`);
-		resolve(game);
-	});
-}
-
-async function APIgetPongGameForUser(userId) {
-	return new Promise(async (resolve, reject) => {
-		let game = await getFetchAPI(`/api/getPongGameForUser?userId=${userId}`);
-		resolve(game);
-	});
-}
 
 async function APIfinishGameOnlyIa(lobbyUUID) {
 	return new Promise(async (resolve, reject) => {

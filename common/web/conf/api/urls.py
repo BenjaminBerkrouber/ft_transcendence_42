@@ -52,23 +52,16 @@ urlpatterns += [
 # Add URLS for game
 urlpatterns += [
     path('getDataGamesPlayers/', views_game.getDataGamesPlayers, name='getDataGamesPlayers'),
-    path('removeGameByUUID/', views_game.removeGameByUUID, name='removeGameByUUID'),
-    path('createGame/', views_game.createGame, name='createGame'),
-    path('getAllLobby/', views_game.getAllLobby),
     path('getGameUUID/', views_game.getGameUUID),
     path('getGameData/', views_game.getGameData),
+    path('createGame/', views_game.createGame, name='createGame'),
+    path('removeGameByUUID/', views_game.removeGameByUUID, name='removeGameByUUID'),
+
+    path('getAllLobby/', views_game.getAllLobby),
+    path('createLobby/', views_game.createLobby),
+    path('removeLobby/', views_game.removeLobby),
 
 
-    # path('getNumberOfGames/', views_game.getNumberOfGames),
-    # path('getMaxElo/', views_game.getMaxElo),
-    # path('getAvgGameTime/', views_game.getAvgGameTime),
-    # path('getMaxWinStreak/', views_game.getMaxWinStreak),
-    # path('getWinrate/', views_game.getWinrate),
-    # path('lastGameIsWin/', views_game.lastGameIsWin),
-    # path('getPlayerGameData/', views_game.getPlayerGameData),
-    # path('getMatches/', views_game.getMatches),
-
-    # path('createLobby/', views_game.createLobby),
     # path('addPlayerToLobby/', views_game.addPlayerToLobby),
     # path('getUserAvailableToLobby/', views_game.getUserAvailableToLobby),
     # path('addIaToLobby/', views_game.addIaToLobby),
@@ -77,13 +70,11 @@ urlpatterns += [
     # path('setWinnerAtTournamentGame/', views_game.setWinnerAtTournamentGame),
     # path('finishGameOnlyIa/', views_game.finishGameOnlyIa),
     # path('getLobbyIsLocked/', views_game.getLobbyIsLocked),
-    # path('removeLobby/', views_game.removeLobby),
-    # path('getConnect4GameForUser/', views_game.getConnect4GameForUser),
-    # path('getPongGameForUser/', views_game.getPongGameForUser),
+
     # path('setPongCustomGame/', views_game.setPongCustomGame),
     # path('getPongCustomData/', views_game.getPongCustomData),
-    # path('setSessionPongCustomGame/', views_game.setSessionPongCustomGame),
 
+    # path('setSessionPongCustomGame/', views_game.setSessionPongCustomGame),
     # path('getSessionPongCustomGame/', views_game.getSessionPongCustomGame),
 
 ]

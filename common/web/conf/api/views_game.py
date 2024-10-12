@@ -174,45 +174,66 @@ def getGameData(request):
 @login_required
 def getAllLobby(request):
     try:
-        # user = request.user 
-        # player = Player.objects.get(username=user.username)
-        # tab = []
-        # lobbys = Lobby.objects.all().order_by('created_at')
-        # for lobby in lobbys:
-        #     if player in lobby.players.all():
-        #         nbr_players = len(lobby.players.all())
-        #         nbr_players += len(lobby.ai_players.all())
-        #         lobby_info = {
-        #             'UUID': lobby.UUID,
-        #             'name': lobby.name,
-        #             'isLocked': lobby.locked,
-        #             'nbr_players': nbr_players,
-        #             'owner': lobby.owner.id,
-        #         }
-        #         tab.append(lobby_info)
-        # return Response({"data": tab}, status=200)
-        return Response({"data": []}, status=200)
+        playerId = int(request.GET.get('userId'))
+        lobbys = Lobby.objects.prefetch_related('ai_players').all().order_by('created_at')
+        tab = [
+            _get_lobby_serializers(lobby)
+            for lobby in lobbys if playerId in lobby.players_ids
+        ]
+        logger.info(f'lobbys {tab}')
+        logger.info(f'nbrAllLobby {len(Lobby.objects.all(   ))}')
+        return Response({"data": tab}, status=200)
+    except Exception as e:
+        return Response({"data": []}, status=500)
+
+
+@api_view(['GET'])
+@login_required
+def createLobby(request):
+    try:
+        playerId = int(request.GET.get('userId'))
+        owner = playerId
+        lobbyName = request.GET.get('lobbyName')
+        lobby = Lobby.objects.create(owner_id=playerId, name=lobbyName)
+        lobby.players_ids.append(playerId)
+        lobby.save()
+        logger.info(f"Lobby with name {lobbyName} has been created.")
+        logger.info(f"  lobby seria: {_get_lobby_serializers(lobby)}")
+        return Response({"data": _get_lobby_serializers(lobby)}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+@csrf_exempt
+@api_view(['GET'])
+@login_required
+def removeLobby(request):
+    try :
+        lobbyUUID = request.GET.get('lobbyUUID')
+        if not lobbyUUID:
+            return Response({"error": "Lobby UUID is required"}, status=400)
+        if not Lobby.objects.filter(UUID=lobbyUUID).exists():
+            return Response({"error": f"Lobby with id {lobbyUUID} does not exist"}, status=404)
+        Lobby.objects.get(UUID=lobbyUUID).delete()
+        return Response({"message": "Lobby has been deleted"}, status=200)
+    except Lobby.DoesNotExist:
+        return Response({"error": f"Lobby with id {lobbyUUID} does not exist"}, status=404)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
 
-# # @api_view(['GET'])
-# # @login_required
-# # def createLobby(request):
-# #     try:
-# #         user = request.user
-# #         owner = Player.objects.get(username=user.username)
-# #         lobbyName = request.GET.get('lobbyName')
-# #         lobby = Lobby.objects.create(owner=owner)
-# #         lobby.name = lobbyName
-# #         lobby.players.add(owner)
-# #         lobby.save()
-# #         return Response({"lobby": lobby.UUID}, status=200)
-# #     except Exception as e:
-# #         return Response({"error": str(e)}, status=500)
-    
+def _get_lobby_serializers(lobby):
+    ia_players_ids = list(lobby.ai_players.values_list('id', flat=True))
+    return {
+        'UUID': str(lobby.UUID),
+        'name': lobby.name,
+        'isLocked': lobby.locked,
+        'owner_id': lobby.owner_id,
+        'players_ids': lobby.players_ids,
+        'ia_players_ids': ia_players_ids,
+        'created_at': lobby.created_at,
+    }
 
-    
+
 # # @csrf_exempt
 # # @api_view(['POST'])
 # # @login_required
@@ -658,21 +679,6 @@ def getAllLobby(request):
 # #     except Exception as e:
 # #         return Response({"error": str(e)}, status=500)
 
-# # @csrf_exempt
-# # @api_view(['GET'])
-# # @login_required
-# # def removeLobby(request):
-# #     try :
-# #         lobbyUUID = request.GET.get('lobbyUUID')
-# #         lobby = Lobby.objects.get(UUID=lobbyUUID)
-# #         lobby.delete()
-# #         lobby.save()
-# #         return Response({"message": "Lobby has been deleted"}, status=200)
-# #     except Lobby.DoesNotExist:
-# #         return Response({"error": f"Lobby with id {lobbyUUID} does not exist"}, status=404)
-# #     except Exception as e:
-# #         return Response({"error": str(e)}, status=500)
-
 # # ===============================================================================================
 # # ========================================= GAME Custom =========================================
 # # ===============================================================================================
@@ -784,273 +790,7 @@ def getAllLobby(request):
 # # ========================================== GAME MANDA =========================================
 # # ===============================================================================================
 
-# @api_view(['GET'])
-# @login_required
-# def getPongGameForUser(request):
-#     try:
-#         userId = request.GET.get('userId')
-#         player = Player.objects.get(id=userId)
-#         games = (Game.objects.filter(player1=player, finish=True, type="pong") | Game.objects.filter(player2=player, finish=True, type="pong"))
-#         games = games.order_by('-created_at')
-        
-#         match_data_list = []
-#         for game in games:
-#             game.player1.img.name = '/media/' + game.player1.img.name if game.player1.img.name.startswith("profile_pics/") else game.player1.img.name
-#             game.player2.img.name = '/media/' + game.player2.img.name if game.player2.img.name.startswith("profile_pics/") else game.player2.img.name
-#             total_seconds = game.time
-#             minutes, seconds = divmod(total_seconds, 60)
-#             match_data = {
-#                 'player1_username': game.player1.username,
-#                 'player2_username': game.player2.username,
-#                 'p1_img': game.player1.img.name,
-#                 'p2_img': game.player2.img.name,
-#                 'time_minutes': minutes,
-#                 'time_seconds': seconds,
-#                 'winner_username': game.winner.username,
-#                 'elo_player1': game.elo_after_player1 - game.elo_before_player1,
-#                 'elo_player2': game.elo_after_player2 - game.elo_before_player2,
-#             }
-#             match_data_list.append(match_data)
-#         return Response({"match_data": match_data_list}, status=200)
-#     except Player.DoesNotExist:
-#         return Response({"error": "Player not found"}, status=404)
-#     except Exception as e:
-#         return Response({"error": str(e)}, status=500)
 
-
-
-
-
-# @api_view(['GET'])
-# @login_required
-# def getConnect4GameForUser(request):
-#     try:
-#         player = Player.objects.get(id=request.GET.get('userId'))
-#         games = (Game.objects.filter(player1=player, finish=True, type="connect4") | Game.objects.filter(player2=player, finish=True, type="connect4"))
-#         games = games.order_by('-created_at')
-        
-#         match_data_list = []
-#         for game in games:
-#             game.player1.img.name = '/media/' + game.player1.img.name if game.player1.img.name.startswith("profile_pics/") else game.player1.img.name
-#             game.player2.img.name = '/media/' + game.player2.img.name if game.player2.img.name.startswith("profile_pics/") else game.player2.img.name
-#             total_seconds = game.time
-#             minutes, seconds = divmod(total_seconds, 60)
-#             match_data = {
-#                 'player1_username': game.player1.username,
-#                 'player2_username': game.player2.username,
-#                 'p1_img': game.player1.img.name,
-#                 'p2_img': game.player2.img.name,
-#                 'time_minutes': minutes,
-#                 'time_seconds': seconds,
-#                 'winner_username': game.winner.username,
-#                 'elo_player1': game.elo_after_player1 - game.elo_before_player1,
-#                 'elo_player2': game.elo_after_player2 - game.elo_before_player2,
-#             }
-#             match_data_list.append(match_data)
-#         return Response({"match_data": match_data_list}, status=200)
-#     except Player.DoesNotExist:
-#         return Response({"error": "Player not found"}, status=404)
-#     except Exception as e:
-#         return Response({"error": str(e)}, status=500)
-    
-
-# # ======================================================================================================================
-# # ============================================ Progress Utils METHODE  =================================================
-# # ======================================================================================================================
-
-# @csrf_exempt
-# @api_view(['GET'])
-# @login_required
-# def getNumberOfGames(request):
-#     try:
-#         id = request.query_params["user"]
-#         typeGame = request.query_params["type"]
-#         player = Player.objects.get(id=id)
-#         games = (Game.objects.filter(player1=player, finish=True, type=typeGame) | Game.objects.filter(player2=player, finish=True, type=typeGame))
-#         games_count = games.count()
-#         return (Response({'value': games_count}, status=200))
-#     except Player.DoesNotExist:
-#         return (Response({"error": "Player not found"}, status=404))
-#     except Exception as e:
-#         return (Response({"error": str(e)}, status=500))
-    
-
-
-# @csrf_exempt
-# @api_view(['GET'])
-# @login_required
-# def getMaxElo(request):
-#     try:
-#         id = request.query_params["user"]
-#         typeGame = request.query_params["type"]
-#         player = Player.objects.get(id=id)
-
-#         games = (Game.objects.filter(player1=player, finish=True, type=typeGame) | Game.objects.filter(player2=player, finish=True, type=typeGame))
-#         max_elo = games.aggregate(Max('elo_after_player1'), Max('elo_after_player2'))
-#         return (Response({'value': max(max_elo['elo_after_player1__max'], max_elo['elo_after_player2__max'])}, status=200))
-#     except Player.DoesNotExist:
-#         return (Response({"error": "Player not found"}, status=404))
-#     except Exception as e:
-#         return (Response({"error": str(e)}, status=500))
-
-
-
-
-# @api_view(['GET'])
-# @login_required
-# def getAvgGameTime(request):
-#     try:
-#         id = request.query_params["user"]
-#         typeGame = request.query_params["type"]
-#         player = Player.objects.get(id=id)
-#         games = (Game.objects.filter(player1=player, finish=True, type=typeGame) | Game.objects.filter(player2=player, finish=True, type=typeGame))
-#         total_time = games.aggregate(
-#             total_time=Sum('time', output_field=IntegerField())
-#         )['total_time']
-#         total_games = games.count()
-#         if total_time is None or total_games == 0:
-#             avg_time = timedelta(0)
-#         else:
-#             avg_time = total_time / total_games
-#         avg_time = timedelta(seconds=avg_time)
-#         total_seconds = int(avg_time.total_seconds())
-#         hours, remainder = divmod(total_seconds, 3600)
-#         minutes, seconds = divmod(remainder, 60)
-#         formatted_avg_time = f"{minutes}m {seconds}s"
-
-#         return (Response({'value': formatted_avg_time}, status=200))
-#     except Player.DoesNotExist:
-#         return (Response({"error": "Player not found"}, status=404))
-#     except Exception as e:
-#         return (Response({"error": str(e)}, status=500))
-
-# @api_view(['GET'])
-# @login_required
-# def getMaxWinStreak(request):
-#     try:
-#         id = request.query_params["user"]
-#         typeGame = request.query_params["type"]
-#         player = Player.objects.get(id=id)
-#         games = (Game.objects.filter(player1=player, finish=True, type=typeGame) | Game.objects.filter(player2=player, finish=True, type=typeGame))
-#         win_streak = 0
-#         max_win_streak = 0
-#         for game in games:
-#             if game.winner == player:
-#                 win_streak += 1
-#                 if win_streak > max_win_streak:
-#                     max_win_streak = win_streak
-#             else:
-#                 win_streak = 0
-#         return (Response({'value': max_win_streak}, status=200))
-#     except Player.DoesNotExist:
-#         return (Response({"error": "Player not found"}, status=404))
-#     except Exception as e:
-#         return (Response({"error": str(e)}, status=500))
-
-# @api_view(['GET'])
-# @login_required
-# def getWinrate(request):
-#     try:
-#         user_id = request.query_params.get('user')
-#         typeGame = request.query_params["type"]
-#         player = Player.objects.get(id=user_id)
-#         games = (Game.objects.filter(player1=player, finish=True, type=typeGame) | Game.objects.filter(player2=player, finish=True, type=typeGame))
-        
-#         wins = games.filter(winner=player).count()
-#         total_games = games.count()
-#         if total_games == 0:
-#             winrate = 0
-#         else:
-#             winrate = (wins / total_games) * 100
-#         winrate = round(winrate, 0)
-#         return (JsonResponse({'winrate': winrate}, status=200))
-#     except Exception as e:
-#         return (JsonResponse({'error': str(e)}, status=500))
-
-# @api_view(['GET'])
-# @login_required
-# def lastGameIsWin(request):
-#     try:
-#         user_id = request.query_params.get('user')
-#         typeGame = request.query_params["type"]
-#         player = Player.objects.get(id=user_id)
-#         games = (Game.objects.filter(player1=player, finish=True, type=typeGame) | Game.objects.filter(player2=player, finish=True, type=typeGame))
-#         games.order_by('-created_at')
-#         if games.count() == 0:
-#             return (JsonResponse({'value': False}, status=200))
-#         last_game = games[0]
-#         if last_game.winner == player:
-#             result = 'Win'
-#         else:
-#             result = 'Lose'
-#         return (JsonResponse({'value': result}, status=200))
-#     except Exception as e:
-#         return (JsonResponse({'error': str(e)}, status=500))
-
-# @api_view(['GET'])
-# @login_required
-# def getPlayerGameData(request):
-#     try:
-#         user_id = request.query_params.get('user')
-#         player = Player.objects.get(id=user_id)
-#         typeGame = request.query_params["type"]
-
-#         games = (Game.objects.filter(player1=player, finish=True, type=typeGame) | Game.objects.filter(player2=player, finish=True, type=typeGame))
-#         games.order_by('-created_at').reverse()
-
-#         data = []
-#         for game in games:
-#             game_data = {
-#                 'player1': game.player1.username,
-#                 'player2': game.player2.username,
-#                 'time': f"{game.time // 60}:{game.time % 60:02d}",
-#                 'winner': game.winner.username,
-#                 'elo_before_player1': game.elo_before_player1,
-#                 'elo_before_player2': game.elo_before_player2,
-#                 'elo_after_player1': game.elo_after_player1,
-#                 'elo_after_player2': game.elo_after_player2,
-#                 'date': game.created_at.strftime('%Y-%m-%d'),
-#                 'elo_after': game.elo_after_player1 if game.player1_id == user_id else game.elo_after_player2
-#             }
-#             data.append(game_data)
-
-#         return (Response({'data': data}, status=200))
-    
-#     except Exception as e:
-#         return (Response({"error": str(e)}, status=500))
-
-# def format_time(seconds):
-#     minutes = seconds // 60
-#     seconds = seconds % 60
-#     return (f"{minutes:02}:{seconds:02}")
-
-# def getMatches(request):
-#     try:
-#         matches = Game.objects.all().order_by('-created_at')[:10]
-#         matches_data = []
-#         for match in matches:
-#             match_data = {
-#                 'player1': {
-#                     'username': match.player1.username,
-#                 },
-#                 'player2': {
-#                     'username': match.player2.username,
-#                 },
-#                 'time': format_time(match.time),
-#                 'winner': {
-#                     'username': match.winner.username,
-#                 },
-#                 'elo_before_player1': match.elo_before_player1,
-#                 'elo_before_player2': match.elo_before_player2,
-#                 'elo_after_player1': match.elo_after_player1,
-#                 'elo_after_player2': match.elo_after_player2,
-#             }
-#             matches_data.append(match_data)
-#         return (JsonResponse({'matches': matches_data}, status=200))
-#     except Exception as e:
-#         return (JsonResponse({'error': str(e)}, status=500))
-
-# from users.models import Player
 
 # def generate_random_games():
 #     # Supprimer les anciennes données

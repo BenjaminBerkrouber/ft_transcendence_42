@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% block title %}pongTournament{% endblock %}
+
+{% block content %}
+<div id="pongTournament-content" class="warp-pongTournament">
+    <aside class="lobby_list">
+        <div class="title-lobby-lst"><h1>Lobbys</h1></div>
+        <div class="lobbys_box" id="all_lobby"></div>
+    </aside>
+    <div id="pongTournament-btn"><span>Create new lobby</span></div>
+    <div class="lobby-form" id="pongTournament-form"></div>
+</div>
+<script type="module" src="{% static 'pongTournament/js/pongTournamentHub.js' %}"></script>
+{% endblock %}
+
+{% block extra_scripts %}
+{% endblock %}

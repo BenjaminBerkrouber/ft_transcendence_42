@@ -1,5 +1,12 @@
+{% extends 'base.html' %}
 
 {% load static %}
+{% block title %}lobby{% endblock %}
+
+{% block custom_css %}
+{% endblock %}
+
+{% block content %}
 <div id="pongTournamentLobby-content" class="warp-lobby">
     {% if lobby.locked %}
         <div class="aside-player">
@@ -109,13 +116,14 @@
         </div>
     </section>
 </div>
+{% endblock %}
 
-
-
-<script src="{% static 'pongTournament/js/lobby_socket.js' %}"></script>
-<script src="{% static 'pongTournament/js/drawTournament.js' %}"></script>
-{% if lobby.owner.id == userId %}
-    <script src="{% static 'pongTournament/js/lobby_owner.js' %}"></script>
-{% else %}
-    <script src="{% static 'pongTournament/js/lobby.js' %}"></script>
-{% endif %}
+{% block extra_scripts %}
+    <script src="{% static 'pongTournament/js/lobby_socket.js' %}"></script>
+    <script src="{% static 'pongTournament/js/drawTournament.js' %}"></script>
+    {% if lobby.owner.id == userId %}
+        <script src="{% static 'pongTournament/js/lobby_owner.js' %}"></script>
+    {% else %}
+        <script src="{% static 'pongTournament/js/lobby.js' %}"></script>
+    {% endif %}
+{% endblock %}
