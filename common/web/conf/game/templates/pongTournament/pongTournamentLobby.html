@@ -8,7 +8,7 @@
 
 {% block content %}
 <div id="pongTournamentLobby-content" class="warp-lobby">
-    {% if lobby.locked %}
+    <!-- {% if lobby.locked %}
         <div class="aside-player">
             <div class="title-lobby">
                 <h1>Player</h1>
@@ -44,86 +44,32 @@
                 {% endfor%}
             </div>
         </div>
-    {% endif %}
+    {% endif %} -->
 
     <span class="loader" id="loader-container"></span>
-
     <section class="lobby-content"> 
         <div class="title-lobby">
             <h1>Lobby</h1>
         </div> 
         <div class="lobby-body" id="lobby-body" data-locked="{{ lobby.locked }}">
-            <div class="slop-content" id="slop-content">
-                {% if not lobby.locked %}
-
-                    {% if lobby.owner.id == userId %}
-                        <div class="player-slot" id="new-player-slot">
-                            <div id="newplayer-btn" class="newplayer-slot active">
-                                <i class="fa-solid fa-plus"></i>
-                                <span>Adding new participate</span>
-                            </div>
-                            <div id="menus-new-player">
-                                <div id="new-player-chose" class="new-option">
-                                    <i class="fas fa-user-plus"></i>
-                                    <span>Add player</span>
-                                </div>
-                                <div id="new-ia-chose" class="new-option">
-                                    <i class="fas fa-robot"></i>
-                                    <span>Add IA</span>
-                                </div>
-                            </div>
-                        </div>
-                    {% endif %}
-
-                    {% for player in players %}
-                        <div class="player-slot player-present" id="player-{{ player.id }}">
-                            <div class="player-data">
-                                <img src="{{ player.img }}" alt="pp">
-                                <div class="player-status-online online"></div>
-                                <span>{{ player.username }}</span>
-                            </div>
-                            <div class="player-status">
-                                {% if player.id == userId %}
-                                <div class="waiting-player"></div>
-                                {% else %}
-                                <div class="pending-player"></div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% endfor %}
-                    {% for ia_player in ia_players %}
-                        <div class="player-slot player-present" id="ia-{{ ia_player.id }}">
-                            <div class="player-data">
-                                <img src="https://www.forbes.fr/wp-content/uploads/2017/01/intelligence-artificielle-872x580.jpg.webp" alt="pp">
-                                <div class="player-status-online online"></div>
-                                <span>IA</span>
-                            </div>
-                            <div class="player-status">
-                                <div class="waiting-player"></div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            </div>
+            <div class="slop-content" id="slop-content"></div>
         </div>
-        <div class="lobby-footer">
-            {% if lobby.owner.id == userId %}
-            <button id="lock-lobby" class="lock-lobby">LOCK</button>
-            {% endif %}
-            <div id="lobby_uuid" data-value="{{ lobby.UUID }}">
+        <div class="lobby-footer" id="lobby-footer">
+            <div id="lobby_uuid" data-value="{{ lobby_UUID }}">
                 <span>Lobby UUID = {{ lobby.UUID|slice:":8" }}</span>
             </div>
         </div>
     </section>
 </div>
+<script type="module" src="{% static 'pongTournament/js/pongTournamentlobby.js' %}"></script>
 {% endblock %}
 
-{% block extra_scripts %}
+<!-- {% block extra_scripts %}
     <script src="{% static 'pongTournament/js/lobby_socket.js' %}"></script>
     <script src="{% static 'pongTournament/js/drawTournament.js' %}"></script>
     {% if lobby.owner.id == userId %}
         <script src="{% static 'pongTournament/js/lobby_owner.js' %}"></script>
     {% else %}
-        <script src="{% static 'pongTournament/js/lobby.js' %}"></script>
+        <script type="module" src="{% static 'pongTournament/js/lobby.js' %}"></script>
     {% endif %}
-{% endblock %}
+{% endblock %} -->

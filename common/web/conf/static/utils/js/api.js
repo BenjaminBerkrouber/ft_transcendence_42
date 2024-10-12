@@ -186,7 +186,7 @@ function APIupdateSocialStatus(userId, socialUserId, friendStatus) {
         return response.json();
     })
     .catch(error => {
-        console.error("Failed to update social status:", error);
+		console.error("Failed to update social status:", error);
         throw error;
     });
 }
@@ -196,15 +196,10 @@ function APIupdateSocialStatus(userId, socialUserId, friendStatus) {
 // ==========================================================================
 
 
-
-
-
-
-
-
-async function APIgetUserAvailableToLobby(lobbyUUID) {
+async function APIgetAllLobby(userId) {
 	return new Promise(async (resolve, reject) => {
-		resolve(await getFetchAPI(`/api/getUserAvailableToLobby?lobbyUUID=${lobbyUUID}`));
+		let allLobby = await getFetchAPI(`/api/getAllLobby?userId=${userId}`);
+		resolve(allLobby);
 	});
 }
 
@@ -215,12 +210,39 @@ async function APIcreateLobby(userId, lobbyName) {
 	});
 }
 
-async function APIgetAllLobby(userId) {
+
+async function APIremoveLobby(lobbyUUID) {
 	return new Promise(async (resolve, reject) => {
-		let allLobby = await getFetchAPI(`/api/getAllLobby?userId=${userId}`);
-		resolve(allLobby);
+		let game = await getFetchAPI(`/api/removeLobby?lobbyUUID=${lobbyUUID}`);
+		resolve(game);
 	});
 }
+
+async function APIgetLobbyData(lobbyUUID) {
+	return new Promise(async (resolve, reject) => {
+		let game = await getFetchAPI(`/api/getLobbyData?lobbyUUID=${lobbyUUID}`);
+		resolve(game);
+	});
+}
+
+async function APIgetAvailableUserToLobby(lobbyUUID) {
+	return new Promise(async (resolve, reject) => {
+		resolve(await getFetchAPI(`/api/getAvailableUserToLobby?lobbyUUID=${lobbyUUID}`));
+	});
+}
+
+async function APIgetPlayerById(userId) {
+	return new Promise(async (resolve, reject) => {
+		resolve(await getFetchAPI(`/api/getPlayerById?userId=${userId}`));
+	});
+}
+
+
+
+
+
+
+
 
 async function APIgetTournamentInfo(tournamentUUID) {
 	return new Promise(async (resolve, reject) => {
@@ -244,12 +266,6 @@ async function APIgetLobbyIsLocked(lobbyUUID) {
 	});
 }
 
-async function APIremoveLobby(lobbyUUID) {
-	return new Promise(async (resolve, reject) => {
-		let game = await getFetchAPI(`/api/removeLobby?lobbyUUID=${lobbyUUID}`);
-		resolve(game);
-	});
-}
 
 
 // pongCustome

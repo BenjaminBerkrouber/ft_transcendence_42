@@ -67,21 +67,19 @@ def pongTournament(request):
 @login_required
 def pongTournamentLobby(request):
     try:
-        # playerId = request.user.username
-        # playerId = Player.objects.get(username=playerId).id
-        # lobby_id = request.GET.get('lobby_id', 'default_value')
-        # lobby = Lobby.objects.get(UUID=lobby_id)
-        # players = lobby.players.all()
-        # for player in players:
-        #     if hasattr(player, 'img') and player.img:
-        #         img_path = str(player.img)
-        #         if img_path.startswith('profile_pics/'):
-        #             player.img = '/media/' + img_path
-        # ia_players = lobby.ai_players.all()
-        return render(request, "pongTournament/pongTournamentLobby_full.html", {"lobby": [], "players": [], "ia_players": [], 'userId': []})
+        userId = request.GET.get('userId', '-1')
+        lobby_UUID = request.GET.get('lobby_id', '-1')
+        # if userId == '-1' or lobby_UUID == '-1':
+        #     return render(request, "pongTournament/pongTournamentHub.html", {"error": "User not found or lobby not found"})
+        lobby = Lobby.objects.get(UUID=lobby_UUID)
+        # if lobby is None or lobby.players.filter(id=userId).exists():
+        #     return render(request, "pongTournament/pongTournamentLobby.html", {"lobby_UUID": lobby_UUID})
+        # return render(request, "pongTournament/pongTournamentHub.html", {"error": "User not in lobby"})
+        return render(request, "pongTournament/pongTournamentLobby.html", {"lobby_UUID": lobby_UUID})
     except Lobby.DoesNotExist:
         return render(request, "pongTournament/pongTournamentHub.html", {"error": "Lobby not found"})
     except Exception as e:
+        logger.error(f"Error: {e}")
         return render(request, "pongTournament/pongTournamentHub.html", {"error": "An unexpected error occurred"})
 
 # @login_required

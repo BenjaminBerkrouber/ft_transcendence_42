@@ -233,61 +233,117 @@ def _get_lobby_serializers(lobby):
         'created_at': lobby.created_at,
     }
 
+@csrf_exempt
+@api_view(['GET'])
+@login_required
+def getLobbyData(request):
+    try:
+        lobbyUUID = request.GET.get('lobbyUUID')
+        if not lobbyUUID:
+            return Response({"error": "Lobby UUID is required"}, status=400)
+        if not Lobby.objects.filter(UUID=lobbyUUID).exists():
+            return Response({"error": f"Lobby with id {lobbyUUID} does not exist"}, status=404)
+        lobby = Lobby.objects.get(UUID=lobbyUUID)
+        data = _get_lobby_data_serializers(lobby)
+        logger.info(f"  data: {data}")
+        return Response({"data": data}, status=200)
+    except Lobby.DoesNotExist:
+        return Response({"error": f"Lobby with id {lobbyUUID} does not exist"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
 
-# # @csrf_exempt
-# # @api_view(['POST'])
-# # @login_required
-# # def addPlayerToLobby(request):
-# #     try:
-# #         lobbyUUID = request.data.get('lobbyUUID')
-# #         userId = request.data.get('userId')
-# #         player = Player.objects.get(id=userId)
-# #         lobby = Lobby.objects.get(UUID=lobbyUUID)
-# #         lobby.players.add(player)
-# #         lobby.save()
-# #         return Response({"lobby": 'a'}, status=200)
-# #     except Lobby.DoesNotExist:
-# #         return Response({"error": f"Lobby with id {lobbyUUID} does not exist"}, status=404)
-# #     except Player.DoesNotExist:
-# #         return Response({"error": f"Player with id {userId} does not exist"}, status=404)
-# #     except Exception as e:
-# #         return Response({"error": str(e)}, status=500)
+def _get_lobby_data_serializers(lobby):
+    try :
+        human_player = _fetch_users_data(lobby.players_ids)
+        ia_players = _get_ias_serializers(lobby.ai_players.all()) 
+        return {
+            'UUID': str(lobby.UUID),
+            'name': lobby.name,
+            'isLocked': lobby.locked,
+            'owner_id': lobby.owner_id,
+            'human_player': human_player,
+            'ia_players': ia_players,
+            'created_at': lobby.created_at,
+        }
+    except Exception as e:
+        logger.error(f"Error while getting lobby data: {e}")
+        return Response({"error": str(e)}, status=500)
 
-# # @csrf_exempt
-# # @api_view(['POST'])
-# # @login_required
-# # def addIaToLobby(request):
-# #     try:
-# #         lobbyUUID = request.data.get('lobbyUUID')
-# #         lobby = Lobby.objects.get(UUID=lobbyUUID)
-# #         newIa = AIPlayer.objects.create()
-# #         lobby.ai_players.add(newIa)
-# #         lobby.save()
-# #         return Response({"lobby": 'a'}, status=200)
-# #     except Lobby.DoesNotExist:
-# #         return Response({"error": f"Lobby with id {lobbyUUID} does not exist"}, status=404)
-# #     except Exception as e:
-# #         return Response({"error": str(e)}, status=500)
+def _get_ias_serializers(ia):
+    try :
+        ia_players = []
+        for ia_player in ia:
+            ia_players.append({
+                'id': ia_player.id,
+                'elo': ia_player.elo,
+                'img': 'https://www.forbes.fr/wp-content/uploads/2017/01/intelligence-artificielle-872x580.jpg.webp',
+                'username': 'ia',
+            })
+        return ia_players
+    except Exception as e:
+        logger.error(f"Error while getting ia data: {e}")
+        return Response({"error": str(e)}, status=500)
 
-# # @api_view(['GET'])
-# # @login_required
-# # def getUserAvailableToLobby(request):
-# #     try:
-# #         lobbyUUID = request.GET.get('lobbyUUID')
-# #         allPlayer = Player.objects.all()
-# #         lobby = Lobby.objects.get(UUID=lobbyUUID)
-# #         playerAlreadyInLobby = lobby.players.all()
-# #         userLst = []
-# #         for user in allPlayer:
-# #             if user not in playerAlreadyInLobby:
-# #                 userData = {}
-# #                 userData['id'] = user.id
-# #                 userData['username'] = user.username
-# #                 userData['img'] = str(user.img)
-# #                 userLst.append(userData)
-# #         return Response(userLst, status=200)
-# #     except Exception as e:
-# #         return Response({"error": str(e)}, status=500)
+@api_view(['GET'])
+@login_required
+def getAvailableUserToLobby(request):
+    try:
+        lobbyUUID = request.GET.get('lobbyUUID')
+        if not lobbyUUID:
+            return Response({"error": "Lobby UUID is required"}, status=400)
+        lobby = Lobby.objects.get(UUID=lobbyUUID)
+        if not lobby:
+            return Response({"error": f"Lobby with id {lobbyUUID} does not exist"}, status=404)
+        playerAlreadyInLobby = lobby.players_ids
+        userLst = _fetch_all_player_data_exclude(playerAlreadyInLobby)
+        return Response(userLst, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+@csrf_exempt
+@api_view(['POST'])
+@login_required
+def addPlayerToLobby(request):
+    try:
+        lobbyUUID = request.data.get('lobbyUUID')
+        userId = request.data.get('userId')
+        if not lobbyUUID or not userId:
+            return Response({"error": "lobbyUUID and userId are required"}, status=400)
+        lobby = Lobby.objects.get(UUID=lobbyUUID)
+        if not lobby:
+            return Response({"error": f"Lobby with id {lobbyUUID} does not exist"}, status=404)
+        if userId in lobby.players_ids:
+            return Response({"error": "User is already in the lobby"}, status=400)
+        lobby.players_ids.append(userId)
+        lobby.save()
+
+        return Response({"message": "Player added to the lobby"}, status=200)
+    except Lobby.DoesNotExist:
+        return Response({"error": f"Lobby with id {lobbyUUID} does not exist"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+@csrf_exempt
+@api_view(['POST'])
+@login_required
+def addIaToLobby(request):
+    try:
+        lobbyUUID = request.data.get('lobbyUUID')
+        if not lobbyUUID:
+            return Response({"error": "lobbyUUID and userId are required"}, status=400)
+        lobby = Lobby.objects.get(UUID=lobbyUUID)
+        if not lobby:
+            return Response({"error": f"Lobby with id {lobbyUUID} does not exist"}, status=404)
+        newIa = AIPlayer.objects.create()
+        lobby.ai_players.add(newIa)
+        lobby.save()
+        return Response({"lobby": 'a'}, status=200)
+    except Lobby.DoesNotExist:
+        return Response({"error": f"Lobby with id {lobbyUUID} does not exist"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
 
 # # def getAllParticipants(lobby):
 # #     player_participants = lobby.players.all()
@@ -850,6 +906,7 @@ def _get_lobby_serializers(lobby):
 #     return "40 games have been generated successfully!"
 
 
+
 def _get_array_game_serializers(games):
     """
         Create a dictionary of games data.
@@ -924,6 +981,8 @@ def _fetch_user_data(player_id: int) -> dict:
     url = f"{BASE_URL}/api/getPlayerById?userId={player_id}"
     return _make_request(url)
 
+
+
 def _fetch_users_data(player_ids: list[int]) -> dict:
     """
     Fetch data for multiple players from the API.
@@ -936,6 +995,20 @@ def _fetch_users_data(player_ids: list[int]) -> dict:
     """
     player_ids_str = ','.join(map(str, player_ids))
     url = f"{BASE_URL}/api/getPlayersByIds?playersIds={player_ids_str}"
+    return _make_request(url)
+
+def _fetch_all_player_data_exclude(exludes_ids: list[int]) -> dict:
+    """
+    Fetch all player data excluding blocked users.
+    
+    Args:
+        exludes_ids (list[int]): A list of exlude user IDs.
+    
+    Returns:
+        dict: The player data excluding blocked users or None if an error occurs.
+    """
+    exludes_ids_str = ','.join(map(str, exludes_ids))
+    url = f"{BASE_URL}/api/getAllPlayerDataExcludeIds?excludeIds={exludes_ids_str}"
     return _make_request(url)
 
 def _make_request(url: str) -> dict:

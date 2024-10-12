@@ -61,10 +61,11 @@ urlpatterns += [
     path('createLobby/', views_game.createLobby),
     path('removeLobby/', views_game.removeLobby),
 
+    path('getLobbyData/', views_game.getLobbyData),
+    path('addPlayerToLobby/', views_game.addPlayerToLobby),
+    path('addIaToLobby/', views_game.addIaToLobby),
+    path('getAvailableUserToLobby/', views_game.getAvailableUserToLobby),
 
-    # path('addPlayerToLobby/', views_game.addPlayerToLobby),
-    # path('getUserAvailableToLobby/', views_game.getUserAvailableToLobby),
-    # path('addIaToLobby/', views_game.addIaToLobby),
     # path('lockLobby/', views_game.lockLobby),
     # path('getTournamentInfo/', views_game.getTournamentInfo),
     # path('setWinnerAtTournamentGame/', views_game.setWinnerAtTournamentGame),
