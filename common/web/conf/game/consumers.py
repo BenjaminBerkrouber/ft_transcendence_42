@@ -224,56 +224,55 @@ class LobbyConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.error(f"[WebSocket LOBBY] : Error in lock_lobby: {e}")
 
-# # class NotifConsumer(AsyncWebsocketConsumer):
+class NotifConsumer(AsyncWebsocketConsumer):
     
-# #         def __init__(self, *args, **kwargs):
-# #             super().__init__(*args, **kwargs)
-# #             self.room_name = None
-# #             self.room_group_name = None
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.room_name = None
+            self.room_group_name = None
         
-# #         async def connect(self):
-# #             self.room_name = self.scope[
-# #                 'url_route']['kwargs']['room_name']
-# #             self.room_group_name = f'notif_{self.room_name}'    
-# #             await self.channel_layer.group_add(
-# #                 self.room_group_name,
-# #                 self.channel_name
-# #             )
+        async def connect(self):
+            self.room_name = self.scope[
+                'url_route']['kwargs']['room_name']
+            self.room_group_name = f'notif_{self.room_name}'    
+            await self.channel_layer.group_add(
+                self.room_group_name,
+                self.channel_name
+            )
     
-# #             await self.accept()
+            await self.accept()
     
-# #         async def disconnect(self, close_code):
-# #             await self.channel_layer.group_discard(
-# #                 self.room_group_name,
-# #                 self.channel_name
-# #             )
+        async def disconnect(self, close_code):
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
     
-# #         async def receive(self, text_data):
-# #             text_data_json = json.loads(text_data)
-# #             ID_Game = text_data_json['ID_Game']
-# #             UUID_Tournament = text_data_json['UUID_Tournament']
-# #             link = text_data_json['link']
-# #             notifType = text_data_json['notifType']
-# #             userDestination = text_data_json['userDestination']
+        async def receive(self, text_data):
+            text_data_json = json.loads(text_data)
+            ID_Game = text_data_json['ID_Game']
+            UUID_Tournament = text_data_json['UUID_Tournament']
+            link = text_data_json['link']
+            notifType = text_data_json['notifType']
+            userDestination = text_data_json['userDestination']
 
-# #             await self.channel_layer.group_send(
-# #                 self.room_group_name,
-# #                 {
-# #                     'type': 'notif_message',
-# #                     'notifType': notifType,
-# #                     'ID_Game': ID_Game,
-# #                     'UUID_Tournament' : UUID_Tournament,
-# #                     'link' : link,
-# #                     'userDestination' : userDestination
-# #                 }
-# #             )
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'notif_message',
+                    'notifType': notifType,
+                    'ID_Game': ID_Game,
+                    'UUID_Tournament' : UUID_Tournament,
+                    'link' : link,
+                    'userDestination' : userDestination
+                }
+            )
 
-# #         async def notif_message(self, event):
-
-# #             await self.send(text_data=json.dumps({
-# #                 'notifType': event['notifType'],
-# #                 'ID_Game': event['ID_Game'],
-# #                 'UUID_Tournament' : event['UUID_Tournament'],
-# #                 'link' : event['link'],
-# #                 'userDestination' : event['userDestination']
-# #             }))
+        async def notif_message(self, event):
+            await self.send(text_data=json.dumps({
+                'notifType': event['notifType'],
+                'ID_Game': event['ID_Game'],
+                'UUID_Tournament' : event['UUID_Tournament'],
+                'link' : event['link'],
+                'userDestination' : event['userDestination']
+            }))

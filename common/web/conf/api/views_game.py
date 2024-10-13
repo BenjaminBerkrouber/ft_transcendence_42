@@ -553,48 +553,53 @@ def addIaToLobby(request):
 # #         return Response({"error": str(e)}, status=500)
 
 
-# # @csrf_exempt
-# # @api_view(['POST'])
-# # @login_required
-# # def lockLobby(request):
-# #     try:
-# #         logger.info('====================> LOCK LOBBY')
-# #         logger.info(f"   CALL")
-# #         lobbyUUID = request.data.get('lobbyUUID')
-# #         lobby = Lobby.objects.get(UUID=lobbyUUID)
-# #         lobby.locked = True
-# #         lobby.save()
-# #         if not Tournament.objects.filter(UUID_LOBBY=lobby).exists() or not Game_Tournament.objects.filter(UUID_TOURNAMENT__UUID_LOBBY=lobby).exists():
-# #             Tournament.objects.create(UUID_LOBBY=lobby)
-# #             tournament = Tournament.objects.get(UUID_LOBBY=lobby)
-# #             makeMatchMakingTournament(lobby, tournament.UUID)
-# #             setNextGamePerGame(lobby)
-# #         else:
-# #             tournament = Tournament.objects.get(UUID_LOBBY=lobby)
-# #             setNextGamePerGame(lobby) #A RETIRER
-# #         tournamentOrganized = {}
-# #         tournamentOrganized['UUID'] = tournament.UUID
-# #         tournamentOrganized['games'] = []
+@csrf_exempt
+@api_view(['POST'])
+@login_required
+def lockLobby(request):
+    try:
+        logger.info('====================> LOCK LOBBY')
+        lobbyUUID = request.data.get('lobbyUUID')
+        if not lobbyUUID:
+            return Response({"error": "Lobby UUID is required"}, status=400)
+        lobby = Lobby.objects.get(UUID=lobbyUUID)
+        if not lobby:
+            return Response({"error": f"Lobby with id {lobbyUUID} does not exist"}, status=404)
+        lobby.locked = True
+        lobby.save()
 
-# #         games = Game_Tournament.objects.filter(UUID_TOURNAMENT=tournament)
-# #         for game in games:
-# #             gameData = {}
-# #             gameData['id'] = game.id
-# #             gameData['winner_player'] = game.winner_player.id if game.winner_player else None
-# #             gameData['winner_ai'] = game.winner_ai.id if game.winner_ai else None
-# #             gameData['next_game'] = game.next_game.id if game.next_game else None
-# #             gameData['layer'] = game.layer
-# #             gameData['players'] = []
-# #             for player in game.players.all():
-# #                 gameData['players'].append(player.id)
-# #             for ia in game.ai_players.all():
-# #                 gameData['players'].append(ia.id)
-# #             tournamentOrganized['games'].append(gameData)
-# #         return Response({"tournament": tournamentOrganized}, status=200)
-# #     except Lobby.DoesNotExist:
-# #         return Response({"error": f"Lobby with id {lobbyUUID} does not exist"}, status=404)
-# #     except Exception as e:
-# #         return Response({"error": str(e)}, status=500)
+        if not Tournament.objects.filter(UUID_LOBBY=lobby).exists() or not Game_Tournament.objects.filter(UUID_TOURNAMENT__UUID_LOBBY=lobby).exists():
+            Tournament.objects.create(UUID_LOBBY=lobby)
+            tournament = Tournament.objects.get(UUID_LOBBY=lobby)
+            makeMatchMakingTournament(lobby, tournament.UUID)
+            setNextGamePerGame(lobby)
+        else:
+            tournament = Tournament.objects.get(UUID_LOBBY=lobby)
+            setNextGamePerGame(lobby) #A RETIRER
+
+        tournamentOrganized = {}
+        tournamentOrganized['UUID'] = tournament.UUID
+        tournamentOrganized['games'] = []
+
+        games = Game_Tournament.objects.filter(UUID_TOURNAMENT=tournament)
+        for game in games:
+            gameData = {}
+            gameData['id'] = game.id
+            gameData['winner_player'] = game.winner_player.id if game.winner_player else None
+            gameData['winner_ai'] = game.winner_ai.id if game.winner_ai else None
+            gameData['next_game'] = game.next_game.id if game.next_game else None
+            gameData['layer'] = game.layer
+            gameData['players'] = []
+            for player in game.players.all():
+                gameData['players'].append(player.id)
+            for ia in game.ai_players.all():
+                gameData['players'].append(ia.id)
+            tournamentOrganized['games'].append(gameData)
+        return Response({"tournament": tournamentOrganized}, status=200)
+    except Lobby.DoesNotExist:
+        return Response({"error": f"Lobby with id {lobbyUUID} does not exist"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
 
 
 # # ===============================================================================================
@@ -936,13 +941,11 @@ def _get_game_serializers(game):
         winner_data = None
         if game.winner_id:
             winner_data = _fetch_user_data(game.winner_id)
-        
         all_player_ids = set()
         player_games = PlayerGame.objects.filter(game=game)
         for player_game in player_games:
             if player_game.player_id:
                 all_player_ids.add(player_game.player_id)
-
         player_data_map = _fetch_users_data(list(all_player_ids))
         players_data = [
             {

@@ -19,7 +19,6 @@ class UILobby {
     }
 
     async init(lobbyData, playerData) {
-        console.log('lobbyData', lobbyData);
         this.playerData = new IPlayerData();
         this.playerData.init(playerData);
         this.lobbyUUID = lobbyData.UUID;
@@ -37,33 +36,25 @@ class UILobby {
         });
         this.isLocked = lobbyData.isLocked;
         this.createAt = lobbyData.created_at;
-        
-        
-        
         let roomName = await APIgetHashRoom(this.lobbyUUID);
-        
         this.wsLobby = new IWs(roomName.roomName, 'lobby', this.processWebSocketMessage.bind(this));
         await this.wsLobby.init();
-        
-        
         this.wsLobby.sendToWebSocket({
             "userId": playerData.id,
             "eventType": "ping",
             "message": `${playerData.id} | ping`
         });
-
-
-
-        if (this.owner_id == playerData.id) {
-            console.log('wsLobby', this.wsLobby);
-            this.lobbyManager = new lobbyOwnerManager(playerData.id, this.wsLobby, this.lobbyUUID);
-        }
+        if (this.owner_id == playerData.id)
+            this.lobbyManager = new lobbyOwnerManager(this);
     }
 
     innerContent() {
         try {
-            if (this.isLocked)
-                console.log('this.isLocked', this.isLocked);
+            if (this.isLocked) {
+                // deleteLobbyBody();
+                // tournamentINfo = await APIgetTournamentInfo(data.message);
+                // loadCanvaTournament(tournamentINfo, NbrPlayer);
+            }
         } catch (error) {
             console.error('Failed to innerContent', error);
         }
@@ -79,6 +70,25 @@ class UILobby {
         }
     }
 
+    getNbrPlayer() {
+        return this.humanPlayers.length + this.aiPlayers.length;
+    }
+
+    getNbrPlayerLogged() {
+        return this.humanPlayers.filter(player => player.isLogged).length;
+    }
+
+    getNbrHumanPlayer() {
+        return this.humanPlayers.length;
+    }
+
+    isAllPlayerLogged() {
+        return this.getNbrPlayer() == this.getNbrPlayerLogged();
+    }
+
+    getIdsOfHumanPlayersNotLogged() {
+        return this.humanPlayers.filter(player => !player.isLogged).map(player => player.getId());
+    }
 
     /**
      * Processes WebSocket messages related to the game.
@@ -96,10 +106,11 @@ class UILobby {
             let eventTypes = {
                 'ping': (data) => this.ping(data),
                 'pong': (data) => this.pong(data),
+                'leave': (data) => this.leave(data),
                 'addPlayer': (data) => this.addPlayer(data),
                 'addIa': (data) => this.addIa(data),
-                // 'leave': (data) => this.leave(data),
-                // 'ready': (data) => this.ready(data),
+                'lock': (data) => this.lock(data),
+                'redirect': (data) => this.redirect(data),
             };
             if (eventTypes[data.eventType]) {
                 eventTypes[data.eventType](data);
@@ -134,6 +145,15 @@ class UILobby {
         }
     }
 
+    async leave(data) {
+        try {
+            if (data.userId == this.playerData.getId()) return;
+            this.togglePlayerLogged(data.userId, false);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     async addPlayer(data) {
         try {
             let newUserId = data.message.split(' | ')[1];
@@ -141,7 +161,6 @@ class UILobby {
             let newHumanPlayer = new UIPlayerLobby();
             newHumanPlayer.init(user, this.playerData.getId());
             this.humanPlayers.push(newHumanPlayer);
-            console.log('user', user);
         }catch (error) {
             console.error('Failed to addPlayer', error);
         }
@@ -157,6 +176,27 @@ class UILobby {
         }
     }
 
+    async lock(data) {
+        try {
+            this.isLocked = true;
+            this.innerContent();
+        } catch (error) {
+            console.error('Failed to lock', error);
+        }
+    }
+
+    async redirect(data) {
+        try {
+            console.log('[WS-G]=> (' + data.message + ')');
+            console.log('redirecting');
+            let url = data.message.split(' | ')[1];
+            console.log('url', url);
+            history.pushState(null, '', url);
+            document.dispatchEvent(new CustomEvent('urlChanged'));
+        } catch (error) {
+            console.error('Failed to redirect', error);
+        }
+    }
 
     displayData () {
         console.log('lobbyData', this);

@@ -1,21 +1,42 @@
+import IWs from '../../../class/IWs.js';
+
 class lobbyOwnerManager {
-    constructor(ownerId, wsLobby, lobbyUUID) {
-        this.wsLobby = wsLobby;
-        this.ownerId = ownerId;
-        this.lobbyUUID = lobbyUUID;
+
+
+    // ===============================================================================================
+	// =========================================== Constructor =======================================
+	// ===============================================================================================
+
+
+    constructor(uiLobby) {
         this.availableUsers = [];
+        this.uiLobby = uiLobby;
         this.init();
     }
 
+
+    // ===============================================================================================
+	// ============================================= INIT ============================================
+	// ===============================================================================================
+
+
     async init() {
         try {
-            this.availableUsers = await APIgetAvailableUserToLobby(this.lobbyUUID);
-            console.log('availableUsers', this.availableUsers);
+            this.availableUsers = await APIgetAvailableUserToLobby(this.uiLobby.lobbyUUID);
             this.innerContent();
+            if (this.uiLobby.isLocked)
+                this.updateLockAtRedirect();
+            this.handlersLockLobby();
         } catch (error) {
             console.error('Failed to init', error);
         }
     }
+
+
+    // ===============================================================================================
+	// ======================================= Inner Element =========================================
+	// ===============================================================================================
+
 
     innerContent() {
         try {
@@ -69,6 +90,10 @@ class lobbyOwnerManager {
     }
 
 
+	// ===============================================================================================
+	// ======================================= handle Element ========================================
+	// ===============================================================================================
+
 
     handlerAddPlayer() {
         try {
@@ -92,9 +117,9 @@ class lobbyOwnerManager {
             });
 
             newIASlot.addEventListener('click', async () => {
-                await APIaddIaToLobby(this.lobbyUUID);
-                this.wsLobby.sendToWebSocket({
-                    "userId": this.ownerId,
+                await APIaddIaToLobby(this.uiLobby.lobbyUUID);
+                this.uiLobby.wsLobby.sendToWebSocket({
+                    "userId": this.uiLobby.playerData.getId(),
                     "eventType": "addIa",
                     "message": `addIa | 0`
                 });
@@ -102,6 +127,106 @@ class lobbyOwnerManager {
             });
         } catch (error) {
             console.error('Failed to handlersChosePlayer', error);
+        }
+    }
+    
+    handlersSearchPlayer() {
+        try {
+            let searchPlayer = document.querySelector('.search-player input');
+            searchPlayer.addEventListener('input', async () => {
+                let search = searchPlayer.value;
+                let findUsername = search.toLowerCase();
+                let boxFindPlayer = document.getElementById('player-found');
+                boxFindPlayer.innerHTML = '';
+                if (findUsername) {
+                    const usersArray = Object.values(this.availableUsers);
+                    const filteredUsers = usersArray.filter(user => user.username.toLowerCase().includes(findUsername));
+                    filteredUsers.forEach(user => {
+                        this.displayAllPlayerFound(user);
+                    });
+                }
+            });
+        } catch (error) {
+            console.error('Failed to handlersSearchPlayer', error);
+        }
+    }
+
+    async handlersLockLobby() {
+        try {
+            let lockLobby = document.getElementById('lock-lobby');
+            if (!lockLobby) return;
+            lockLobby.addEventListener('click', async () => {
+                // if (this.uiLobby.getNbrPlayer() < 4 || (this.uiLobby.getNbrPlayer() & (this.uiLobby.getNbrPlayer() - 1)) !== 0)
+                //     return console.log('You need to add more players ');
+                // if (!this.uiLobby.isAllPlayerLogged()) {
+                //     for (let userId of this.uiLobby.getIdsOfHumanPlayersNotLogged())
+                //         this.sendWsNotifAtUser(userId);
+                //     return console.log('You need to wait for all player to be ready');
+                // }
+                await APIlockLobby(lobbyUUID);
+                this.uiLobby.wsLobby.sendToWebSocket({
+                    "userId": this.uiLobby.playerData.getId(),
+                    "eventType": "lock",
+                    "message": `lock | ${this.uiLobby.lobbyUUID}`
+                });
+                this.updateLockAtRedirect();
+            });
+        } catch (error) {
+            console.error('Failed to handlersLockLobby', error);
+        }
+    }
+
+    async handlerRedirectPlayerBtn() {
+        try {
+            let redirect = document.getElementById('redirect-btn');
+            if (!redirect) return;
+            redirect.addEventListener('click', async () => {
+                if (!this.uiLobby.isAllPlayerLogged()) {
+                    for (let userId of this.uiLobby.getIdsOfHumanPlayersNotLogged())
+                        this.sendWsNotifAtUser(userId);
+                    return console.log('You need to wait for all player to be ready');
+                }
+                this.uiLobby.wsLobby.sendToWebSocket({
+                    "userId": this.uiLobby.playerData.getId(),
+                    "eventType": "redirect",
+                    "message": `redirect | /game/pong/tournament/game/?lobby_id=${this.uiLobby.lobbyUUID}`
+                });
+                // await APIfinishGameOnlyIa(lobbyUUID);
+            });
+        } catch (error) {
+            console.error('Failed to handlerRedirect', error);
+        }
+    }
+
+
+    // ===============================================================================================
+	// ======================================= Display Element =======================================
+	// ===============================================================================================
+
+
+    async displayChosePlayerType() {
+        try {
+            let newPlayerBtn = document.getElementById('newplayer-btn');
+            if (newPlayerBtn)
+                newPlayerBtn.classList.remove('active');
+            let chosePlayerBtn = document.getElementById('menus-new-player');
+            if (chosePlayerBtn)
+                chosePlayerBtn.classList.add('active');
+        } catch (error) {
+            console.error('Failed to toggleChosePlayer', error);
+        }
+    }
+
+    async displayNewPlayerForm() {
+        try {
+            let chosePlayerBtn = document.getElementById('menus-new-player');
+            if (chosePlayerBtn)
+                chosePlayerBtn.classList.remove('active');
+            let newPlayerBtn = document.getElementById('newplayer-btn');
+            if (newPlayerBtn)
+                newPlayerBtn.classList.add('active');
+        } catch (error) {
+            console.error('Failed to displayNewPlayerForm', error);
         }
     }
 
@@ -129,26 +254,6 @@ class lobbyOwnerManager {
         }
     }
 
-    handlersSearchPlayer() {
-        try {
-            let searchPlayer = document.querySelector('.search-player input');
-            searchPlayer.addEventListener('input', async () => {
-                let search = searchPlayer.value;
-                let findUsername = search.toLowerCase();
-                let boxFindPlayer = document.getElementById('player-found');
-                boxFindPlayer.innerHTML = '';
-                if (findUsername) {
-                    const usersArray = Object.values(this.availableUsers);
-                    const filteredUsers = usersArray.filter(user => user.username.toLowerCase().includes(findUsername));
-                    filteredUsers.forEach(user => {
-                        this.displayAllPlayerFound(user);
-                    });
-                }
-            });
-        } catch (error) {
-            console.error('Failed to handlersSearchPlayer', error);
-        }
-    }
 
     async displayAllPlayerFound(user) {
         try {
@@ -161,10 +266,10 @@ class lobbyOwnerManager {
             `;
             boxFindPlayer.appendChild(boxPlayer);
             boxPlayer.addEventListener('click', async () => {
-                await APIaddPlayerToLobby(this.lobbyUUID, user.id);
+                await APIaddPlayerToLobby(this.uiLobby.lobbyUUID, user.id);
                 this.hideSelectPlayerForm();
-                this.wsLobby.sendToWebSocket({
-                    "userId": this.ownerId,
+                this.uiLobby.wsLobby.sendToWebSocket({
+                    "userId": this.uiLobby.playerData.getId(),
                     "eventType": "addPlayer",
                     "message": `addPlayer | ${user.id}`
                 });
@@ -173,6 +278,12 @@ class lobbyOwnerManager {
             console.error('Failed to innerPlayerFound', error);
         }
     }
+
+
+    // ===============================================================================================
+	// ======================================== Hide Element =========================================
+	// ===============================================================================================
+
 
     async hideSelectPlayerForm() {
         try {
@@ -185,29 +296,47 @@ class lobbyOwnerManager {
         }
     }
 
-    async displayChosePlayerType() {
+
+    // ===============================================================================================
+	// ======================================== Utils Element ========================================
+	// ===============================================================================================
+
+
+
+
+    async sendWsNotifAtUser(userId) {
         try {
-            let newPlayerBtn = document.getElementById('newplayer-btn');
-            if (newPlayerBtn)
-                newPlayerBtn.classList.remove('active');
-            let chosePlayerBtn = document.getElementById('menus-new-player');
-            if (chosePlayerBtn)
-                chosePlayerBtn.classList.add('active');
+            let roomName = await APIgetHashRoom('notif_' + userId);
+            let wsNotif = new IWs(roomName.roomName, 'notif', () => {});
+            await wsNotif.init();
+            await wsNotif.sendToWebSocket({
+                'notifType': 'userNotReady',
+                'ID_Game': 'null',
+                'userDestination': userId,
+                'UUID_Tournament': this.uiLobby.lobbyUUID,
+                'link': '/game/pong/tournament/lobby/?lobby_id='+this.uiLobby.lobbyUUID,
+            });
+            setTimeout(() => { wsNotif.closeWebSocket();}, 1000);
         } catch (error) {
-            console.error('Failed to toggleChosePlayer', error);
+            console.error('Failed to sendWsNotifAtUser', error);
         }
     }
+    
 
-    async displayNewPlayerForm() {
+    async updateLockAtRedirect() {
         try {
-            let chosePlayerBtn = document.getElementById('menus-new-player');
-            if (chosePlayerBtn)
-                chosePlayerBtn.classList.remove('active');
-            let newPlayerBtn = document.getElementById('newplayer-btn');
-            if (newPlayerBtn)
-                newPlayerBtn.classList.add('active');
+            let lockLobby = document.getElementById('lock-lobby');
+            let parrentBox = lockLobby.parentNode;
+            lockLobby.remove();
+            let redirect = document.createElement('button');
+            redirect.className = 'lock-lobby';
+            redirect.id = 'redirect-btn';
+            redirect.innerHTML = 'Redirect';
+            parrentBox.appendChild(redirect);
+
+            this.handlerRedirectPlayerBtn();
         } catch (error) {
-            console.error('Failed to displayNewPlayerForm', error);
+            console.error('Failed to updateLockAtRedirect', error);
         }
     }
 
