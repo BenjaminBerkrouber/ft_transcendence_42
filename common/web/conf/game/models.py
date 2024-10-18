@@ -89,23 +89,6 @@ class PlayerGame(models.Model):
     elo_after = models.IntegerField(null=True, blank=True)
 
 
-# _____________________________________ AIPlayer _____________________________________
-
-
-class AIPlayer(models.Model):
-    """
-    AIPlayer model representing an AI-controlled player.
-
-    Attributes:
-        id (AutoField): Unique identifier for the AI player.
-        elo (PositiveIntegerField): Elo rating for the AI player, defaults to 1000.
-        created_at (DateTimeField): Timestamp of when the AI player was created.
-    """
-    id = models.AutoField(primary_key=True)
-    elo = models.PositiveIntegerField(default=1000)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-
 # _____________________________________ Lobby _____________________________________
 
 
@@ -127,7 +110,7 @@ class Lobby(models.Model):
     locked = models.BooleanField(default=False)
     owner_id = models.IntegerField(null=True, blank=True)
     players_ids = models.JSONField(default=list)
-    ai_players = models.ManyToManyField('AIPlayer', related_name='lobbies', blank=True)
+    ia_ids = models.JSONField(default=list)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -162,8 +145,7 @@ class Game_Tournament(models.Model):
         UUID_TOURNAMENT (ForeignKey): Reference to the associated tournament.
         players_ids (JSONField): List of player IDs participating in the game.
         ai_players (ManyToManyField): AI players associated with the game.
-        winner_player_id (IntegerField): ID of the player who won the game (nullable).
-        winner_ai (ForeignKey): Reference to the AI player who won the game (nullable).
+        winner_id (IntegerField): ID of the player who won the game or -1 if ia win (nullable).
         created_at (DateTimeField): Timestamp of when the game was created.
         next_game (ForeignKey): Reference to the next game in the tournament (nullable).
         layer (IntegerField): Tournament layer or level for this game.
@@ -172,9 +154,8 @@ class Game_Tournament(models.Model):
     id = models.AutoField(primary_key=True)
     UUID_TOURNAMENT = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='tournament')
     players_ids = models.JSONField(default=list)
-    ai_players = models.ManyToManyField(AIPlayer, related_name='games')
-    winner_player_id = models.IntegerField(null=True, blank=True)
-    winner_ai = models.ForeignKey(AIPlayer, on_delete=models.CASCADE, related_name='won_games', null=True, blank=True)
+    ia_ids = models.JSONField(default=list)
+    winner_id = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     next_game = models.ForeignKey('Game_Tournament', on_delete=models.CASCADE, related_name='previous_game', null=True, blank=True)
     layer = models.IntegerField(default=0)

@@ -3,6 +3,7 @@ import UIIa from './UIIa.js';
 import lobbyOwnerManager from './lobbyOwnerManager.js';
 import IWs from '../../../class/IWs.js';
 import IPlayerData from "../../../class/IPlayerData.js";
+import UITournament from './UITournament.js';
 
 class UILobby {
     constructor() {
@@ -16,9 +17,12 @@ class UILobby {
         this.createAt = null;
         this.wsLobby = null;
         this.lobbyManager = null;
+        this.tournamentUUID = null;
+        this.UiTournament = null;
     }
 
     async init(lobbyData, playerData) {
+        this.tournamentUUID = lobbyData.tournamentUUID;
         this.playerData = new IPlayerData();
         this.playerData.init(playerData);
         this.lobbyUUID = lobbyData.UUID;
@@ -48,15 +52,26 @@ class UILobby {
             this.lobbyManager = new lobbyOwnerManager(this);
     }
 
-    innerContent() {
+    async innerContent() {
         try {
             if (this.isLocked) {
-                // deleteLobbyBody();
-                // tournamentINfo = await APIgetTournamentInfo(data.message);
-                // loadCanvaTournament(tournamentINfo, NbrPlayer);
-            }
+                let tournamentData = await APIgetTournamentDataByUUID(this.tournamentUUID);
+                this.UiTournament = new UITournament();
+                await this.UiTournament.init(tournamentData);
+                this.UiTournament.start();
+            } else
+                this.innerAllPlayers();
         } catch (error) {
             console.error('Failed to innerContent', error);
+        }
+    }
+
+    async innerAllPlayers() {
+        try {
+            this.humanPlayers.forEach(player => player.innerPlayer());
+            this.aiPlayers.forEach(player => player.innerPlayer());
+        } catch (error) {
+            console.error('Failed to innerAllPlayers', error);
         }
     }
 
@@ -83,7 +98,7 @@ class UILobby {
     }
 
     isAllPlayerLogged() {
-        return this.getNbrPlayer() == this.getNbrPlayerLogged();
+        return this.getNbrHumanPlayer() == this.getNbrPlayerLogged();
     }
 
     getIdsOfHumanPlayersNotLogged() {
@@ -160,6 +175,7 @@ class UILobby {
             let user = await APIgetPlayerById(newUserId);
             let newHumanPlayer = new UIPlayerLobby();
             newHumanPlayer.init(user, this.playerData.getId());
+            newHumanPlayer.innerPlayer();
             this.humanPlayers.push(newHumanPlayer);
         }catch (error) {
             console.error('Failed to addPlayer', error);
@@ -170,6 +186,7 @@ class UILobby {
         try {
             let ia = new UIIa();
             ia.init({id: data.userId});
+            ia.innerPlayer();
             this.aiPlayers.push(ia);
         } catch (error) {
             console.error('Failed to addIa', error);
@@ -178,6 +195,7 @@ class UILobby {
 
     async lock(data) {
         try {
+            console.log('[WS-G]=> (' + data.message + ')');
             this.isLocked = true;
             this.innerContent();
         } catch (error) {

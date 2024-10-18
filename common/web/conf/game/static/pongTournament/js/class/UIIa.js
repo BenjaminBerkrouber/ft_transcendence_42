@@ -7,7 +7,6 @@ class UIPlayerLobby {
 
     init(iaData) {
         this.id = iaData.id;
-        this.innerPlayer();
     }
 
     innerPlayer() {

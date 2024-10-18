@@ -24,9 +24,7 @@ class lobbyOwnerManager {
         try {
             this.availableUsers = await APIgetAvailableUserToLobby(this.uiLobby.lobbyUUID);
             this.innerContent();
-            if (this.uiLobby.isLocked)
-                this.updateLockAtRedirect();
-            this.handlersLockLobby();
+            this.uiLobby.isLocked ? this.updateLockAtRedirect() : this.handlersLockLobby();
         } catch (error) {
             console.error('Failed to init', error);
         }
@@ -40,8 +38,9 @@ class lobbyOwnerManager {
 
     innerContent() {
         try {
-            this.innerAddingPlayerForm();
             this.innerLockButton();
+            if (!this.uiLobby.isLocked)
+                this.innerAddingPlayerForm();
         } catch (error) {
             console.error('Failed to innerContent', error);
         }
@@ -156,18 +155,21 @@ class lobbyOwnerManager {
             let lockLobby = document.getElementById('lock-lobby');
             if (!lockLobby) return;
             lockLobby.addEventListener('click', async () => {
-                // if (this.uiLobby.getNbrPlayer() < 4 || (this.uiLobby.getNbrPlayer() & (this.uiLobby.getNbrPlayer() - 1)) !== 0)
-                //     return console.log('You need to add more players ');
-                // if (!this.uiLobby.isAllPlayerLogged()) {
-                //     for (let userId of this.uiLobby.getIdsOfHumanPlayersNotLogged())
-                //         this.sendWsNotifAtUser(userId);
-                //     return console.log('You need to wait for all player to be ready');
-                // }
-                await APIlockLobby(lobbyUUID);
+                if (this.uiLobby.getNbrPlayer() < 4)
+                    return console.log('You need to add more players ');
+                if (!this.uiLobby.isAllPlayerLogged()) {
+                    console.log('bool', this.uiLobby.isAllPlayerLogged());
+                    for (let userId of this.uiLobby.getIdsOfHumanPlayersNotLogged())
+                        this.sendWsNotifAtUser(userId);
+                    return console.log('You need to wait for all player to be ready');
+                }
+                let reps = await APIlockLobby(this.uiLobby.lobbyUUID);
+                console.log('reps', reps);
+                console.log('reps UUID', reps.tournamentUUID);
                 this.uiLobby.wsLobby.sendToWebSocket({
                     "userId": this.uiLobby.playerData.getId(),
                     "eventType": "lock",
-                    "message": `lock | ${this.uiLobby.lobbyUUID}`
+                    "message": `lock | ${reps.tournamentUUID}`
                 });
                 this.updateLockAtRedirect();
             });

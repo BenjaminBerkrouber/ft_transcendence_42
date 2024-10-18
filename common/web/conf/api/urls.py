@@ -66,11 +66,10 @@ urlpatterns += [
     path('addIaToLobby/', views_game.addIaToLobby),
     path('getAvailableUserToLobby/', views_game.getAvailableUserToLobby),
     path('lockLobby/', views_game.lockLobby),
+    path('getTournamentDataByUUID/', views_game.getTournamentDataByUUID),
 
-    # path('getTournamentInfo/', views_game.getTournamentInfo),
     # path('setWinnerAtTournamentGame/', views_game.setWinnerAtTournamentGame),
     # path('finishGameOnlyIa/', views_game.finishGameOnlyIa),
-    # path('getLobbyIsLocked/', views_game.getLobbyIsLocked),
 
     # path('setPongCustomGame/', views_game.setPongCustomGame),
     # path('getPongCustomData/', views_game.getPongCustomData),

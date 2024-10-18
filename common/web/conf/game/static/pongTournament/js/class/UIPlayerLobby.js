@@ -11,7 +11,6 @@ class UIPlayerLobby extends IPlayerData {
         super.init(playerData);
         if (this.getId() == currentUserId)
             this.isLogged = true;
-        this.innerPlayer();
     }
 
     innerPlayer() {

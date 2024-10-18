@@ -5,7 +5,7 @@ import random
 from game.Class.engine import Engine
 from asgiref.sync import sync_to_async
 
-from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame, AIPlayer
+from game.models import Game, Lobby, Game_Tournament, Tournament, PongCustomGame
 
 import asyncio
 import logging

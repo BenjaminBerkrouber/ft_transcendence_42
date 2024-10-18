@@ -244,9 +244,9 @@ async function APIgetPlayerById(userId) {
 
 
 
-async function APIgetTournamentInfo(tournamentUUID) {
+async function APIgetTournamentDataByUUID(tournamentUUID) {
 	return new Promise(async (resolve, reject) => {
-		let game = await getFetchAPI(`/api/getTournamentInfo?tournamentUUID=${tournamentUUID}`);
+		let game = await getFetchAPI(`/api/getTournamentDataByUUID?tournamentUUID=${tournamentUUID}`);
 		resolve(game);
 	});
 }
@@ -255,13 +255,6 @@ async function APIgetTournamentInfo(tournamentUUID) {
 async function APIfinishGameOnlyIa(lobbyUUID) {
 	return new Promise(async (resolve, reject) => {
 		let game = await getFetchAPI(`/api/finishGameOnlyIa?lobbyUUID=${lobbyUUID}`);
-		resolve(game);
-	});
-}
-
-async function APIgetLobbyIsLocked(lobbyUUID) {
-	return new Promise(async (resolve, reject) => {
-		let game = await getFetchAPI(`/api/getLobbyIsLocked?lobbyUUID=${lobbyUUID}`);
 		resolve(game);
 	});
 }
